@@ -1,9 +1,4 @@
-import { doc, deleteDoc } from "firebase/firestore";
-export async function deleteSale(id: string) {
-  const docRef = doc(db, "sales", id);
-  await deleteDoc(docRef);
-}
-import { collection, addDoc, getDocs, Timestamp } from "firebase/firestore";
+import { collection, addDoc, getDocs, Timestamp, doc, deleteDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
 export interface Sale {
@@ -17,6 +12,11 @@ export interface Sale {
     productName: string;
     qty: number;
   }>;
+}
+
+export async function deleteSale(id: string) {
+  const docRef = doc(db, "sales", id);
+  await deleteDoc(docRef);
 }
 
 export async function addSale(sale: Omit<Sale, "id">) {
