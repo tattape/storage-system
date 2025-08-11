@@ -1,0 +1,233 @@
+"use client";
+import { useState, useEffect } from "react";
+import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Input, Card, Image } from "@heroui/react";
+import { updateProductInBasket } from "../../../services/baskets";
+import { addSale, deleteSale } from "../../../services/sales";
+
+interface SalesModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    baskets: any[];
+    onSaleComplete: () => void;
+}
+
+export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }: SalesModalProps) {
+    const [step, setStep] = useState(0);
+    const [selectedBasket, setSelectedBasket] = useState<any>(null);
+    const [productCounts, setProductCounts] = useState<{ [key: string]: number }>({});
+    const [searchTerm, setSearchTerm] = useState("");
+    const [searchInput, setSearchInput] = useState("");
+    const [focusedInput, setFocusedInput] = useState<string | null>(null);
+    const [customerName, setCustomerName] = useState("");
+    const [trackingNumber, setTrackingNumber] = useState("");
+
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearchTerm(searchInput);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchInput]);
+
+    const handleCloseModal = () => {
+        setStep(0);
+        setSelectedBasket(null);
+        setProductCounts({});
+        setSearchTerm("");
+        setSearchInput("");
+        setFocusedInput(null);
+        setCustomerName("");
+        setTrackingNumber("");
+        onClose();
+    };
+
+    const products = selectedBasket ? selectedBasket.products || [] : [];
+    const nextStep = () => setStep((s) => Math.min(s + 1, 2));
+    const prevStep = () => setStep((s) => Math.max(s - 1, 0));
+
+    const handleQuickSet = (productId: string, value: number) => {
+        setProductCounts(c => ({ ...c, [productId]: value }));
+        setFocusedInput(null);
+    };
+
+    const handleSaveSale = async () => {
+        if (!selectedBasket) return;
+        const basketId = selectedBasket.id;
+        const basketName = selectedBasket.name;
+        const products = selectedBasket.products || [];
+        const saleProducts = products
+            .filter((p: any) => (productCounts[p.id] || 0) > 0)
+            .map((p: any) => ({
+                productId: p.id,
+                productName: p.name,
+                qty: productCounts[p.id] || 0,
+            }));
+
+        if (saleProducts.length === 0) return;
+
+        if (!customerName.trim() || !trackingNumber.trim()) {
+            alert("Please enter customer name and tracking number");
+            return;
+        }
+
+        await addSale({
+            date: new Date(),
+            basketId,
+            products: saleProducts,
+            customerName: customerName.trim(),
+            trackingNumber: trackingNumber.trim(),
+        } as any);
+
+        // Update stock for each product
+        for (const p of saleProducts) {
+            const prod = products.find((x: any) => x.id === p.productId);
+            await updateProductInBasket(basketId, p.productId, { stock: (prod?.stock || 0) - p.qty });
+        }
+
+        handleCloseModal();
+        onSaleComplete();
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={handleCloseModal} size="xl" isDismissable={true} hideCloseButton={false}>
+            <ModalContent>
+                <ModalHeader className="flex flex-col items-center justify-center text-center">
+                    <h3 className="text-lg font-semibold mb-4">Sales Process</h3>
+                    {/* Step Indicator */}
+                    <div className="flex items-center justify-center">
+                        {["Select Basket", "Choose Quantity", "Confirm"].map((label, idx) => (
+                            <div key={label} className="flex items-center">
+                                <div className={`rounded-full w-20 h-8 flex items-center justify-center font-bold text-white transition-all ${step === idx ? 'bg-blue-500 scale-110' : 'bg-gray-300'}`}>{idx + 1}</div>
+                                {idx < 2 && <div className="w-8 h-1 bg-gray-300 mx-2" />}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="flex items-center justify-center mt-2">
+                        {["Basket", "Quantity", "Confirm"].map((label, idx) => (
+                            <div key={label} className="flex items-center">
+                                <span className={`text-xs text-center w-20 ${step === idx ? 'text-blue-600 font-semibold' : 'text-gray-400'}`}>{label}</span>
+                                {idx < 2 && <div className="w-8 mx-2" />}
+                            </div>
+                        ))}
+                    </div>
+                </ModalHeader>
+                <ModalBody className={`px-6 py-4 ${step === 0 ? 'max-h-[50vh] flex flex-col' : 'max-h-[50vh] overflow-y-auto'}`}>
+                    {step === 0 && (
+                        <>
+                            {/* Search Input - Fixed at top */}
+                            <div className="mb-4 flex-shrink-0">
+                                <Input
+                                    placeholder="Search baskets..."
+                                    value={searchInput}
+                                    onChange={(e) => setSearchInput(e.target.value)}
+                                    onClear={() => {
+                                        setSearchInput("");
+                                        setSearchTerm("");
+                                    }}
+                                    className="w-full"
+                                    isClearable
+                                />
+                            </div>
+                            {/* Scrollable Grid Area */}
+                            <div className="flex-1 overflow-y-auto max-h-[400px] p-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 content-start auto-rows-fr">
+                                    {baskets
+                                        .filter((b: any) =>
+                                            b.name.toLowerCase().includes(searchTerm.toLowerCase())
+                                        )
+                                        .map((b: any) => (
+                                            <Card key={b.id} isPressable onClick={() => { setSelectedBasket(b); nextStep(); }} className={`transition-all overflow-hidden h-full flex flex-col ${selectedBasket?.id === b.id ? 'ring-2 ring-blue-500 scale-105' : ''}`}>
+                                                <Image
+                                                    src="https://images.pexels.com/photos/205961/pexels-photo-205961.jpeg?_gl=1*i2vpd6*_ga*Mjc4NDk0MTguMTc1NDkyMDgwOA..*_ga_8JE65Q40S6*czE3NTQ5MjA4MDgkbzEkZzEkdDE3NTQ5MjA4MjckajQxJGwwJGgw"
+                                                    alt={b.name}
+                                                    className="hidden md:block w-full flex-1 min-h-[120px] object-cover rounded-b-none"
+                                                />
+                                                <div className="flex items-center justify-center text-center font-semibold text-xl md:text-lg lg:text-sm p-3 h-full">{b.name}</div>
+                                            </Card>
+                                        ))}
+                                </div>
+                                {baskets.filter((b: any) => b.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+                                    <div className="text-center text-gray-500 py-4">No baskets found</div>
+                                )}
+                            </div>
+                        </>
+                    )}
+
+                    {step === 1 && (
+                        <div className="min-h-[300px]">
+                            <div className="w-full space-y-3">
+                                {products.map((p: any) => (
+                                    <div key={p.id} className="bg-gray-50 rounded-lg p-4 relative">
+                                        <div className="flex flex-col sm:flex-row items-center gap-3">
+                                            <span className="font-medium text-sm sm:text-base min-w-[80px] text-center sm:text-left">{p.name}</span>
+                                            <div className="flex items-center gap-2">
+                                                <Button size="sm" onPress={() => setProductCounts(c => ({ ...c, [p.id]: Math.max((c[p.id] || 0) - 1, 0) }))}>-</Button>
+                                                <div className="relative">
+                                                    <Input
+                                                        type="number"
+                                                        min={0}
+                                                        value={(productCounts[p.id] || 0).toString()}
+                                                        onChange={e => setProductCounts(c => ({ ...c, [p.id]: Math.max(Number(e.target.value), 0) }))}
+                                                        onFocus={() => setFocusedInput(p.id)}
+                                                        onBlur={() => setTimeout(() => setFocusedInput(null), 150)}
+                                                        className="w-16 text-center flex justify-center"
+                                                    />
+                                                    {focusedInput === p.id && (
+                                                        <div className="absolute top-full left-0 mt-1 flex gap-1 bg-white border rounded-lg shadow-lg p-2 z-50">
+                                                            <Button size="sm" onPress={() => handleQuickSet(p.id, 10)} className="text-xs px-2 py-1">10</Button>
+                                                            <Button size="sm" onPress={() => handleQuickSet(p.id, 20)} className="text-xs px-2 py-1">20</Button>
+                                                            <Button size="sm" onPress={() => handleQuickSet(p.id, 30)} className="text-xs px-2 py-1">30</Button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <Button size="sm" onPress={() => setProductCounts(c => ({ ...c, [p.id]: (c[p.id] || 0) + 1 }))}>+</Button>
+                                            </div>
+                                            <span className="text-base lg:text-xs text-gray-400">(In stock: {p.stock})</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {step === 2 && (
+                        <div className="min-h-[300px]">
+                            <div className="mb-4 font-semibold text-lg text-center">Customer Information</div>
+                            <div className="w-full max-w-md mx-auto space-y-4 mb-6">
+                                <Input
+                                    label="Customer Name"
+                                    placeholder="Enter customer name"
+                                    value={customerName}
+                                    onChange={(e) => setCustomerName(e.target.value)}
+                                    isRequired
+                                />
+                                <Input
+                                    label="Tracking Number"
+                                    placeholder="Enter tracking number"
+                                    value={trackingNumber}
+                                    onChange={(e) => setTrackingNumber(e.target.value)}
+                                    isRequired
+                                />
+                            </div>
+                            <div className="mb-4 font-semibold text-lg text-center">Order Summary</div>
+                            <div className="w-full max-w-md mx-auto space-y-2">
+                                {products.filter((p: any) => (productCounts[p.id] || 0) > 0).map((p: any) => (
+                                    <div key={p.id} className="flex justify-between items-center py-2 px-4 bg-gray-50 rounded-lg">
+                                        <span className="font-medium">{p.name}</span>
+                                        <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">{productCounts[p.id] || 0} pcs</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </ModalBody>
+                <ModalFooter>
+                    {step > 0 && <Button variant="light" onPress={prevStep} className="w-full sm:w-auto text-xl md:text-base">Back</Button>}
+                    {step > 0 && step < 2 && <Button color="primary" onPress={nextStep} className="w-full sm:w-auto text-xl md:text-base">Next</Button>}
+                    {step === 2 && <Button color="success" onPress={handleSaveSale} className="w-full sm:w-auto text-xl md:text-base">Save</Button>}
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
+}

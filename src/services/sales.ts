@@ -10,7 +10,8 @@ export interface Sale {
   id?: string;
   date: Date;
   basketId: string;
-  basketName: string;
+  customerName?: string;
+  trackingNumber?: string;
   products: Array<{
     productId: string;
     productName: string;

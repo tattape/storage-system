@@ -1,18 +1,66 @@
 "use client";
 import { Card, Button, Input, Spinner } from "@heroui/react";
-import { useState } from "react";
-import { signInWithPopup } from "firebase/auth";
+import { useState, useEffect } from "react";
+import { signInWithPopup, onAuthStateChanged } from "firebase/auth";
 import { auth, googleProvider } from "../../lib/firebase";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [checking, setChecking] = useState(true);
+    const router = useRouter();
+
+    // Check if user is already logged in
+    useEffect(() => {
+        const checkSession = async () => {
+            try {
+                const response = await fetch('/api/session', {
+                    method: 'GET',
+                    credentials: 'include',
+                });
+
+                if (response.ok) {
+                    // User has valid session, redirect to dashboard
+                    router.replace("/dashboard");
+                } else {
+                    // No valid session, show login page
+                    setChecking(false);
+                }
+            } catch (error) {
+                // Error checking session, show login page
+                setChecking(false);
+            }
+        };
+
+        checkSession();
+    }, [router]);
 
     const handleLogin = async () => {
         setLoading(true);
         setError("");
         try {
-            await signInWithPopup(auth, googleProvider);
+            const result = await signInWithPopup(auth, googleProvider);
+            if (result.user) {
+                // Get ID token and set session
+                const idToken = await result.user.getIdToken();
+
+                // Send token to session API
+                const response = await fetch('/api/session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token: idToken }),
+                });
+
+                if (response.ok) {
+                    // Redirect after successful session creation
+                    router.push("/dashboard");
+                } else {
+                    setError("Failed to create session. Please try again.");
+                }
+            }
         } catch (e) {
             setError("Login failed. Please try again.");
         } finally {
@@ -20,10 +68,19 @@ export default function LoginPage() {
         }
     };
 
+    // Show loading while checking authentication
+    if (checking) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary-100 to-secondary-300">
+                <Spinner size="lg" color="secondary" />
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-300 p-4">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary-100 to-secondary-300 p-4">
             <Card className="w-full max-w-md p-8 shadow-xl rounded-2xl flex flex-col items-center">
-                <h1 className="text-2xl font-bold mb-6 text-blue-700">Storage System Login</h1>
+                <h1 className="text-2xl font-bold mb-6 text-secondary-700">Storage System Login</h1>
                 <Button
                     onClick={handleLogin}
                     color="primary"
@@ -31,7 +88,7 @@ export default function LoginPage() {
                     className="w-full flex items-center justify-center"
                     disabled={loading}
                 >
-                    {loading ? <Spinner size="sm" color="primary" className="mr-2" /> : null}
+                    {loading ? <Spinner size="sm" color="secondary" className="mr-2" /> : null}
                     Login with Google
                 </Button>
                 {error && <div className="text-red-500 mt-4 text-center">{error}</div>}

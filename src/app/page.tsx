@@ -1,6 +1,7 @@
 'use client'
 
 import Image from "next/image";
+import { Spinner } from "@heroui/react";
 import { getAllBaskets } from "../services/baskets";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -26,11 +27,10 @@ export default function Home() {
   if (checking) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-blue-300">
-        <svg className="animate-spin h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-        </svg>
-        <div className="mt-4 text-lg text-blue-700 font-semibold">Loading...</div>
+        <div className="flex flex-col items-center gap-4">
+          <Spinner size="lg" color="primary" />
+          <span className="text-blue-700 text-xl font-semibold">Loading...</span>
+        </div>
       </div>
     );
   }

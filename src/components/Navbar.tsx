@@ -15,7 +15,7 @@ export default function Navbar() {
     return (
         <HeroNavbar className="sticky top-0 z-10 bg-white/80 shadow-md backdrop-blur-md">
             <NavbarBrand>
-                <span className="font-bold text-green-700 text-xl">Storage System</span>
+                <span className="font-bold text-secondary-700 text-xl">Storage System</span>
             </NavbarBrand>
             <NavbarContent justify="end">
                 <NavbarItem>
