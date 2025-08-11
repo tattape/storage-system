@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownMenu, DropdownItem, DropdownTrigger, Pagination, Input, Button, useDisclosure } from "@heroui/react";
 import AddProductModal from "./AddProductModal";
 import StockModal from "./StockModal";
@@ -83,13 +83,13 @@ export default function StockTable({ products, basketId, basket, onEdit, onDelet
         setPage(1);
     };
 
-    const onSearchChange = (value?: string) => {
+    const onSearchChange = useCallback((value?: string) => {
         if (value !== undefined) {
             setSearchInput(value);
         } else {
             setSearchInput("");
         }
-    };
+    }, []);
 
     const onClear = () => {
         setSearchInput("");
@@ -145,7 +145,7 @@ export default function StockTable({ products, basketId, basket, onEdit, onDelet
                 </div>
             </div>
         );
-    }, [filterValue, rowsPerPage, filteredItems.length, onSearchChange, onOpen]);
+    }, [rowsPerPage, filteredItems.length, onSearchChange, onOpen, searchInput]);
 
     return (
         <div className="py-4">

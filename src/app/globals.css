@@ -65,3 +65,31 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Prevent mobile keyboard and zoom for readonly inputs */
+@media (max-width: 768px) {
+  input[readonly] {
+    pointer-events: auto !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    font-size: 16px !important; /* Prevents zoom */
+    caret-color: transparent !important;
+  }
+  
+  input[readonly]:focus {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  /* Prevent backdrop clicks on mobile floating input modal */
+  .floating-input-modal [data-slot="backdrop"] {
+    pointer-events: none !important;
+  }
+  
+  /* Ensure modal content is still clickable */
+  .floating-input-modal [data-slot="base"] {
+    pointer-events: auto !important;
+  }
+}

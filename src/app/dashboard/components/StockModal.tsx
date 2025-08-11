@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
-import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Input, Card } from "@heroui/react";
+import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Card } from "@heroui/react";
 import { updateProductInBasket } from "../../../services/baskets";
+import MobileOptimizedInput from "../../../components/MobileOptimizedInput";
 
 interface StockModalProps {
     isOpen: boolean;
@@ -45,7 +46,6 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
         onStockUpdated();
     };
 
-    const nextStep = () => setStep(1);
     const prevStep = () => setStep(0);
 
     return (
@@ -128,13 +128,14 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
                                     >
                                         -
                                     </Button>
-                                    <Input
+                                    <MobileOptimizedInput
                                         type="number"
-                                        min={0}
+                                        label="Quantity"
                                         value={quantity.toString()}
-                                        onChange={(e) => setQuantity(Math.max(0, Number(e.target.value)))}
+                                        onChange={(value) => setQuantity(Math.max(0, Number(value)))}
                                         className="w-24 text-center"
                                         placeholder="0"
+                                        size="sm"
                                     />
                                     <Button 
                                         size="sm" 

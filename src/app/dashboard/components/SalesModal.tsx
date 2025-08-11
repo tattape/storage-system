@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Input, Card, Image } from "@heroui/react";
+import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Card, Image } from "@heroui/react";
 import { updateProductInBasket } from "../../../services/baskets";
-import { addSale, deleteSale } from "../../../services/sales";
+import { addSale } from "../../../services/sales";
+import MobileOptimizedInput from "../../../components/MobileOptimizedInput";
 
 interface SalesModalProps {
     isOpen: boolean;
@@ -54,7 +55,6 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
     const handleSaveSale = async () => {
         if (!selectedBasket) return;
         const basketId = selectedBasket.id;
-        const basketName = selectedBasket.name;
         const products = selectedBasket.products || [];
         const saleProducts = products
             .filter((p: any) => (productCounts[p.id] || 0) > 0)
@@ -117,16 +117,15 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                         <>
                             {/* Search Input - Fixed at top */}
                             <div className="mb-4 flex-shrink-0">
-                                <Input
+                                <MobileOptimizedInput
                                     placeholder="Search baskets..."
+                                    label="Search Baskets"
                                     value={searchInput}
-                                    onChange={(e) => setSearchInput(e.target.value)}
-                                    onClear={() => {
-                                        setSearchInput("");
-                                        setSearchTerm("");
+                                    onChange={(value) => {
+                                        setSearchInput(value);
+                                        setSearchTerm(value);
                                     }}
                                     className="w-full"
-                                    isClearable
                                 />
                             </div>
                             {/* Scrollable Grid Area */}
@@ -164,14 +163,13 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                             <div className="flex items-center gap-2">
                                                 <Button size="sm" onPress={() => setProductCounts(c => ({ ...c, [p.id]: Math.max((c[p.id] || 0) - 1, 0) }))}>-</Button>
                                                 <div className="relative">
-                                                    <Input
+                                                    <MobileOptimizedInput
                                                         type="number"
-                                                        min={0}
+                                                        label="Quantity"
                                                         value={(productCounts[p.id] || 0).toString()}
-                                                        onChange={e => setProductCounts(c => ({ ...c, [p.id]: Math.max(Number(e.target.value), 0) }))}
-                                                        onFocus={() => setFocusedInput(p.id)}
-                                                        onBlur={() => setTimeout(() => setFocusedInput(null), 150)}
+                                                        onChange={(value) => setProductCounts(c => ({ ...c, [p.id]: Math.max(Number(value), 0) }))}
                                                         className="w-16 text-center flex justify-center"
+                                                        size="sm"
                                                     />
                                                     {focusedInput === p.id && (
                                                         <div className="absolute top-full left-0 mt-1 flex gap-1 bg-white border rounded-lg shadow-lg p-2 z-50">
@@ -195,18 +193,18 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                         <div className="min-h-[300px]">
                             <div className="mb-4 font-semibold text-lg text-center">Customer Information</div>
                             <div className="w-full max-w-md mx-auto space-y-4 mb-6">
-                                <Input
+                                <MobileOptimizedInput
                                     label="Customer Name"
                                     placeholder="Enter customer name"
                                     value={customerName}
-                                    onChange={(e) => setCustomerName(e.target.value)}
+                                    onChange={setCustomerName}
                                     isRequired
                                 />
-                                <Input
+                                <MobileOptimizedInput
                                     label="Tracking Number"
                                     placeholder="Enter tracking number"
                                     value={trackingNumber}
-                                    onChange={(e) => setTrackingNumber(e.target.value)}
+                                    onChange={setTrackingNumber}
                                     isRequired
                                 />
                             </div>

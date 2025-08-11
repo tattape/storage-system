@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Accordion, AccordionItem, Input } from "@heroui/react";
-import { createBasket, addProductToBasket, updateProductInBasket, deleteProductFromBasket, updateBasketName, deleteBasket } from "../../../services/baskets";
+import { createBasket, deleteProductFromBasket, updateBasketName, deleteBasket } from "../../../services/baskets";
 import { PencilIcon, TrashIcon, PlusIcon } from "../../../components/icons";
 import StockTable from "./StockTable";
 import EditProductModal from "./EditProductModal";

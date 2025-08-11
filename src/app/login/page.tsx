@@ -27,7 +27,7 @@ export default function LoginPage() {
                     // No valid session, show login page
                     setChecking(false);
                 }
-            } catch (error) {
+            } catch {
                 // Error checking session, show login page
                 setChecking(false);
             }
@@ -61,7 +61,7 @@ export default function LoginPage() {
                     setError("Failed to create session. Please try again.");
                 }
             }
-        } catch (e) {
+        } catch {
             setError("Login failed. Please try again.");
         } finally {
             setLoading(false);

@@ -1,6 +1,6 @@
 "use client";
-import { useState, useMemo, useEffect } from "react";
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownMenu, DropdownItem, DropdownTrigger, Pagination, Select, SelectItem, Input, Button, useDisclosure } from "@heroui/react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownMenu, DropdownItem, DropdownTrigger, Pagination, Input, Button, useDisclosure } from "@heroui/react";
 import { updateProductInBasket } from "../../../services/baskets";
 import { deleteSale } from "../../../services/sales";
 import SalesModal from "./SalesModal";
@@ -50,7 +50,7 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
         }
 
         return filteredSales;
-    }, [sales, filterValue]);
+    }, [sales, filterValue, hasSearchFilter]);
 
     const pages = Math.ceil(filteredItems.length / rowsPerPage);
     const items = filteredItems.slice((page - 1) * rowsPerPage, page * rowsPerPage);
@@ -60,13 +60,13 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
         setPage(1);
     };
 
-    const onSearchChange = (value?: string) => {
+    const onSearchChange = useCallback((value?: string) => {
         if (value !== undefined) {
             setSearchInput(value);
         } else {
             setSearchInput("");
         }
-    };
+    }, []);
 
     const onClear = () => {
         setSearchInput("");
@@ -139,7 +139,7 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                 </div>
             </div>
         );
-    }, [filterValue, rowsPerPage, filteredItems.length, onSearchChange]);
+    }, [rowsPerPage, filteredItems.length, onSearchChange, onOpen, searchInput]);
 
     return (
         <div className="space-y-4">

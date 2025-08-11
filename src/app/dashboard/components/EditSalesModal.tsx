@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Input } from "@heroui/react";
+import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter } from "@heroui/react";
 import { updateProductInBasket } from "../../../services/baskets";
 import { addSale, deleteSale } from "../../../services/sales";
+import MobileOptimizedInput from "../../../components/MobileOptimizedInput";
 
 interface EditSalesModalProps {
     isOpen: boolean;
@@ -98,25 +99,19 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
                         <div className="flex flex-col gap-4">
                             <div className="space-y-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Customer Name
-                                    </label>
-                                    <Input
+                                    <MobileOptimizedInput
+                                        label="Customer Name"
                                         placeholder="Enter customer name"
                                         value={customerName}
-                                        onChange={(e) => setCustomerName(e.target.value)}
-                                        variant="bordered"
+                                        onChange={setCustomerName}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Tracking Number
-                                    </label>
-                                    <Input
+                                    <MobileOptimizedInput
+                                        label="Tracking Number"
                                         placeholder="Enter tracking number"
                                         value={trackingNumber}
-                                        onChange={(e) => setTrackingNumber(e.target.value)}
-                                        variant="bordered"
+                                        onChange={setTrackingNumber}
                                     />
                                 </div>
                                 <div className="p-3 bg-gray-50 rounded-lg">
@@ -141,17 +136,16 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
                                             -
                                         </Button>
                                         <div className="relative">
-                                            <Input
+                                            <MobileOptimizedInput
                                                 type="number"
-                                                min={0}
+                                                label="Quantity"
                                                 value={(editProductCounts[p.id] || 0).toString()}
-                                                onChange={e => setEditProductCounts(c => ({ 
+                                                onChange={(value) => setEditProductCounts(c => ({ 
                                                     ...c, 
-                                                    [p.id]: Math.max(Number(e.target.value), 0) 
+                                                    [p.id]: Math.max(Number(value), 0) 
                                                 }))}
-                                                onFocus={() => setFocusedInput(p.id)}
-                                                onBlur={() => setTimeout(() => setFocusedInput(null), 150)}
                                                 className="w-16 text-center"
+                                                size="sm"
                                             />
                                             {focusedInput === p.id && (
                                                 <div className="absolute top-full left-0 mt-1 flex gap-1 bg-white border rounded-lg shadow-lg p-2 z-50">

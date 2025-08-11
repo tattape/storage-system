@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Input } from "@heroui/react";
+import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter } from "@heroui/react";
 import { updateProductInBasket } from "../../../services/baskets";
+import MobileOptimizedInput from "../../../components/MobileOptimizedInput";
 
 interface EditProductModalProps {
     isOpen: boolean;
@@ -58,34 +59,30 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
             <ModalContent>
                 <ModalHeader>Edit Product</ModalHeader>
                 <ModalBody>
-                    <Input 
+                    <MobileOptimizedInput 
                         label="Product Name" 
                         value={productForm.name || ""} 
-                        onChange={e => setProductForm(f => ({ ...f, name: e.target.value }))} 
-                        autoFocus 
+                        onChange={(value) => setProductForm(f => ({ ...f, name: value }))} 
                     />
-                    <Input 
+                    <MobileOptimizedInput 
                         label="Min Stock" 
                         type="number" 
                         value={String(productForm.minStock || 0)} 
-                        onChange={e => setProductForm(f => ({ ...f, minStock: Number(e.target.value) || 0 }))} 
+                        onChange={(value) => setProductForm(f => ({ ...f, minStock: Number(value) || 0 }))} 
                         className="mt-2" 
                     />
-                    <Input 
+                    <MobileOptimizedInput 
                         label="Price" 
                         type="number" 
-                        inputMode="decimal" 
-                        step="any" 
                         value={String(productForm.price || 0)} 
-                        onChange={e => setProductForm(f => ({ ...f, price: Number(e.target.value) || 0 }))} 
+                        onChange={(value) => setProductForm(f => ({ ...f, price: Number(value) || 0 }))} 
                         className="mt-2" 
                     />
-                    <Input 
+                    <MobileOptimizedInput 
                         label="Pack Size" 
                         type="number" 
-                        min="1" 
                         value={String(productForm.packSize || 1)} 
-                        onChange={e => setProductForm(f => ({ ...f, packSize: Number(e.target.value) || 1 }))} 
+                        onChange={(value) => setProductForm(f => ({ ...f, packSize: Number(value) || 1 }))} 
                         className="mt-2" 
                     />
                 </ModalBody>

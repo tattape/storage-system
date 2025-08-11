@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
-import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Input } from "@heroui/react";
+import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter } from "@heroui/react";
 import { addProductToBasket } from "../../../services/baskets";
+import MobileOptimizedInput from "../../../components/MobileOptimizedInput";
 
 interface AddProductModalProps {
     isOpen: boolean;
@@ -79,69 +80,44 @@ export default function AddProductModal({ isOpen, onClose, basketId, onProductAd
                 <ModalHeader>Add New Product</ModalHeader>
                 <ModalBody>
                     <div className="flex flex-col gap-4">
-                        <Input
+                        <MobileOptimizedInput
                             label="Product Name"
                             placeholder="Enter product name"
                             value={productName}
-                            onChange={(e) => setProductName(e.target.value)}
+                            onChange={setProductName}
                             isRequired
                         />
-                        <Input
+                        <MobileOptimizedInput
                             label="Price"
                             placeholder="Enter price"
                             type="number"
-                            step="0.01"
-                            min="0"
                             value={price}
-                            onChange={(e) => setPrice(e.target.value)}
+                            onChange={setPrice}
                             isRequired
-                            startContent={
-                                <div className="pointer-events-none flex items-center">
-                                    <span className="text-default-400 text-small">฿</span>
-                                </div>
-                            }
                         />
-                        <Input
+                        <MobileOptimizedInput
                             label="Stock"
                             placeholder="Enter stock quantity"
                             type="number"
-                            min="0"
                             value={stock}
-                            onChange={(e) => setStock(e.target.value)}
+                            onChange={setStock}
                             isRequired
-                            endContent={
-                                <div className="pointer-events-none flex items-center">
-                                    <span className="text-default-400 text-small">pcs</span>
-                                </div>
-                            }
                         />
-                        <Input
+                        <MobileOptimizedInput
                             label="Minimum Stock"
                             placeholder="Enter minimum stock level"
                             type="number"
-                            min="0"
                             value={minStock}
-                            onChange={(e) => setMinStock(e.target.value)}
+                            onChange={setMinStock}
                             isRequired
-                            endContent={
-                                <div className="pointer-events-none flex items-center">
-                                    <span className="text-default-400 text-small">pcs</span>
-                                </div>
-                            }
                         />
-                        <Input
+                        <MobileOptimizedInput
                             label="Pack Size"
                             placeholder="Enter pieces per pack"
                             type="number"
-                            min="1"
                             value={packSize}
-                            onChange={(e) => setPackSize(e.target.value)}
+                            onChange={setPackSize}
                             isRequired
-                            endContent={
-                                <div className="pointer-events-none flex items-center">
-                                    <span className="text-default-400 text-small">pcs/pack</span>
-                                </div>
-                            }
                         />
                     </div>
                 </ModalBody>

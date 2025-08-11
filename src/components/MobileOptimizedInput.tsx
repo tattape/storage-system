@@ -1,66 +1,115 @@
-import { Input, InputProps } from "@heroui/react";
-import { useEffect, useRef } from "react";
+"use client";
+import React, { useState } from "react";
+import { Input } from "@heroui/react";
+import FloatingInputModal from "./FloatingInputModal";
 
-interface MobileOptimizedInputProps extends InputProps {
-  preventZoom?: boolean;
-  adjustForKeyboard?: boolean;
+interface MobileOptimizedInputProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  type?: "text" | "number" | "email";
+  placeholder?: string;
+  isRequired?: boolean;
+  description?: string;
+  errorMessage?: string;
+  isInvalid?: boolean;
+  className?: string;
+  size?: "sm" | "md" | "lg";
 }
 
-export default function MobileOptimizedInput({ 
-  preventZoom = true, 
-  adjustForKeyboard = true,
-  ...props 
+export default function MobileOptimizedInput({
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder,
+  isRequired = false,
+  description,
+  errorMessage,
+  isInvalid = false,
+  className = "",
+  size = "md"
 }: MobileOptimizedInputProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  useEffect(() => {
-    const handleFocus = () => {
-      if (adjustForKeyboard && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Scroll element into view when keyboard appears
-        setTimeout(() => {
-          if (inputRef.current) {
-            inputRef.current.scrollIntoView({
-              behavior: 'smooth',
-              block: 'center'
-            });
-          }
-        }, 300); // Delay to let keyboard animation finish
-      }
-    };
+  // Check if device is mobile
+  const isMobile = typeof window !== "undefined" && window.innerWidth <= 768;
 
-    const handleBlur = () => {
-      if (adjustForKeyboard && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Reset scroll position when keyboard disappears
-        setTimeout(() => {
-          window.scrollTo(0, 0);
-        }, 100);
-      }
-    };
-
-    const inputElement = inputRef.current;
-    if (inputElement) {
-      inputElement.addEventListener('focus', handleFocus);
-      inputElement.addEventListener('blur', handleBlur);
-
-      // Prevent zoom on focus for mobile
-      if (preventZoom && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        inputElement.style.fontSize = '16px'; // Prevents zoom on iOS
-      }
-
-      return () => {
-        inputElement.removeEventListener('focus', handleFocus);
-        inputElement.removeEventListener('blur', handleBlur);
-      };
+  const handleInputClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isMobile) {
+      setIsModalOpen(true);
     }
-  }, [preventZoom, adjustForKeyboard]);
+  };
 
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    if (isMobile) {
+      e.target.blur(); // ทำให้ input ไม่ focus
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleModalConfirm = (newValue: string) => {
+    onChange(newValue);
+  };
+
+  if (isMobile) {
+    return (
+      <>
+        <Input
+          label={label}
+          value={value}
+          placeholder={placeholder}
+          type={type}
+          isRequired={isRequired}
+          description={description}
+          errorMessage={errorMessage}
+          isInvalid={isInvalid}
+          size={size}
+          className={className}
+          onClick={handleInputClick}
+          onFocus={handleInputFocus}
+          readOnly
+          tabIndex={-1}
+          inputMode="none"
+          style={{ caretColor: 'transparent' }}
+          classNames={{
+            input: "cursor-pointer select-none",
+            inputWrapper: "cursor-pointer bg-white/50 border border-purple-200 hover:border-purple-400"
+          }}
+        />
+        
+        <FloatingInputModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onConfirm={handleModalConfirm}
+          title={`แก้ไข${label}`}
+          label={label}
+          initialValue={value}
+          type={type}
+          placeholder={placeholder}
+        />
+      </>
+    );
+  }
+
+  // Desktop version - normal input
   return (
     <Input
-      ref={inputRef}
-      {...props}
+      label={label}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      type={type}
+      isRequired={isRequired}
+      description={description}
+      errorMessage={errorMessage}
+      isInvalid={isInvalid}
+      size={size}
+      className={className}
       classNames={{
-        input: `${props.classNames?.input || ''} ${preventZoom ? 'text-base' : ''}`,
-        ...props.classNames
+        inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
       }}
     />
   );
