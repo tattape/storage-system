@@ -35,17 +35,16 @@ jobs:
         echo "NEXT_PUBLIC_FIREBASE_CLIENT_EMAIL=${{ secrets.NEXT_PUBLIC_FIREBASE_CLIENT_EMAIL }}" >> .env.local
         echo "NEXT_PUBLIC_FIREBASE_PRIVATE_KEY=${{ secrets.NEXT_PUBLIC_FIREBASE_PRIVATE_KEY }}" >> .env.local
 
-    - name: Build project for GitHub Pages
-      run: |
-        cp next.config.pages.ts next.config.ts
-        npm run build
+    - name: Build project
+      run: npm run build
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: nextjs-build
         path: |
-          out/
+          .next/
+          public/
           package.json
           package-lock.json
 
@@ -53,28 +52,20 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
-    
-    # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
 
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
         name: nextjs-build
-        path: ./
 
-    - name: Setup Pages
-      uses: actions/configure-pages@v4
-
-    - name: Upload to GitHub Pages
-      uses: actions/upload-pages-artifact@v3
+    - name: Deploy to Vercel
+      uses: amondnet/vercel-action@v25
       with:
-        path: out
-
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.ORG_ID }}
+        vercel-project-id: ${{ secrets.PROJECT_ID }}
+        vercel-args: '--prod'
