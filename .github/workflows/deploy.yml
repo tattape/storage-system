@@ -48,24 +48,27 @@ jobs:
           package.json
           package-lock.json
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: nextjs-build
-
-    - name: Deploy to Vercel
-      uses: vercel/action@v1
-      with:
-        vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-org-id: ${{ secrets.ORG_ID }}
-        vercel-project-id: ${{ secrets.PROJECT_ID }}
-        vercel-args: '--prod'
+  # Remove Vercel deployment - using Docker deployment instead
+  # Uncomment the deploy section below if you want to deploy to Vercel
+  # 
+  # deploy:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/master'
+  # 
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v4
+  # 
+  #   - name: Download build artifacts
+  #     uses: actions/download-artifact@v4
+  #     with:
+  #       name: nextjs-build
+  # 
+  #   - name: Deploy to Vercel
+  #     uses: amondnet/vercel-action@v25
+  #     with:
+  #       vercel-token: ${{ secrets.VERCEL_TOKEN }}
+  #       vercel-org-id: ${{ secrets.ORG_ID }}
+  #       vercel-project-id: ${{ secrets.PROJECT_ID }}
+  #       vercel-args: '--prod'
