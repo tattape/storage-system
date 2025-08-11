@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo, useEffect } from "react";
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownMenu, DropdownItem, DropdownTrigger, Pagination, Select, SelectItem, Input, Button, useDisclosure } from "@heroui/react";
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownMenu, DropdownItem, DropdownTrigger, Pagination, Input, Button, useDisclosure } from "@heroui/react";
 import AddProductModal from "./AddProductModal";
 import StockModal from "./StockModal";
 import { StockIcon, EditIcon, DeleteIcon, PlusIcon } from "../../../components/icons";
@@ -23,9 +23,6 @@ export default function StockTable({ products, basketId, basket, onEdit, onDelet
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [stockModalOpen, setStockModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<any>(null);
-
-    // Debug: ตรวจสอบข้อมูล products
-    console.log("StockTable products:", products);
 
     // Debounce search input
     useEffect(() => {
@@ -57,16 +54,14 @@ export default function StockTable({ products, basketId, basket, onEdit, onDelet
                             stock.includes(filterValue) ||
                             packSize.includes(filterValue) ||
                             totalPrice.includes(filterValue);
-                    } catch (err) {
-                        console.error("Error filtering product:", product, err);
+                    } catch {
                         return false;
                     }
                 });
             }
 
             return filteredProducts;
-        } catch (error) {
-            console.error("Error in filteredItems:", error);
+        } catch {
             return [];
         }
     }, [products, filterValue, hasSearchFilter]);

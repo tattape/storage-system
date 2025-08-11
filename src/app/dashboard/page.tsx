@@ -9,7 +9,7 @@ import DarkVeil from "../../components/DarkVeil";
 
 export default function DashboardPage() {
   const [baskets, setBaskets] = useState<any[]>([]);
-  const { user, userRole, loading, error, isOwner, isEditor, role } = useAuth();
+  const { user, loading, error } = useAuth();
 
   const fetchBaskets = async () => {
     const data = await getAllBaskets();

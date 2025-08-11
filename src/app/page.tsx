@@ -1,9 +1,7 @@
 'use client'
 
-import Image from "next/image";
 import { Spinner } from "@heroui/react";
-import { getAllBaskets } from "../services/baskets";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "../lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";

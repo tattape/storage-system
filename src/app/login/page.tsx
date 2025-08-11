@@ -1,7 +1,7 @@
 "use client";
-import { Card, Button, Input, Spinner } from "@heroui/react";
+import { Card, Button, Spinner } from "@heroui/react";
 import { useState, useEffect } from "react";
-import { signInWithPopup, onAuthStateChanged } from "firebase/auth";
+import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../../lib/firebase";
 import { useRouter } from "next/navigation";
 

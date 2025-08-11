@@ -11,7 +11,7 @@ import { useAuth } from "../../../hooks/useAuth";
 
 export default function StockSection({ baskets, refreshBaskets }: { baskets: any[]; refreshBaskets: () => void }) {
     // Authentication hook
-    const { isOwner, isEditor, loading: authLoading, userRole, role, error } = useAuth();
+    const { isOwner, isEditor, loading: authLoading } = useAuth();
 
     // All hooks at the top
     const [expanded, setExpanded] = useState<string | null>(null);
@@ -37,8 +37,7 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                 await deleteBasket(basket.id);
                 refreshBaskets();
             }
-        } catch (error) {
-            console.error("Error deleting basket:", error);
+        } catch {
             alert("Failed to delete basket. Please try again.");
         }
     };
@@ -72,13 +71,11 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
             await createBasket(basketName.trim());
             setModal(null);
             refreshBaskets();
-        } catch (error) {
-            console.error("Error creating basket:", error);
+        } catch {
             alert("Failed to create basket. Please try again.");
         }
     };
     const handleEditProduct = (basket: any, product: any) => {
-        console.log("Edit product:", product);
         setSelectedBasket(basket);
         setSelectedProduct(product);
         setEditProductModalOpen(true);

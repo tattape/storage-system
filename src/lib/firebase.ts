@@ -1,6 +1,5 @@
 // lib/firebase.ts
 
-import { getAnalytics } from 'firebase/analytics';
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";

@@ -23,8 +23,7 @@ export async function getUserByEmail(email: string): Promise<User | null> {
     
     const userDoc = querySnapshot.docs[0];
     return { id: userDoc.id, ...userDoc.data() } as User;
-  } catch (error) {
-    console.error("Error getting user by email:", error);
+  } catch {
     return null;
   }
 }
