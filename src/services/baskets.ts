@@ -34,7 +34,7 @@ export async function deleteBasket(id: string) {
 }
 
 // ADD product to basket
-export async function addProductToBasket(basketId: string, product: { name: string; stock: number; minStock: number }) {
+export async function addProductToBasket(basketId: string, product: { name: string; stock: number; minStock: number; price: number }) {
     const basketRef = doc(db, "baskets", basketId);
     const basketSnap = await getDoc(basketRef);
     if (!basketSnap.exists()) throw new Error("Basket not found");
@@ -55,7 +55,7 @@ export async function addProductToBasket(basketId: string, product: { name: stri
 }
 
 // UPDATE product in basket
-export async function updateProductInBasket(basketId: string, productId: string, updatedFields: Partial<{ name: string; stock: number; minStock: number }>) {
+export async function updateProductInBasket(basketId: string, productId: string, updatedFields: Partial<{ name: string; stock: number; minStock: number; price: number }>) {
     const basketRef = doc(db, "baskets", basketId);
     const basketSnap = await getDoc(basketRef);
     if (!basketSnap.exists()) throw new Error("Basket not found");
