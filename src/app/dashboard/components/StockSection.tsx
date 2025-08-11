@@ -87,13 +87,13 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
 
     return (
         <div className="mb-8 w-full max-w-3xl mx-auto px-2 sm:px-4">
-            <h2 className="text-lg sm:text-xl font-bold">Stock Overview</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-100">Stock Overview</h2>
             <div className="flex gap-2 items-center justify-end my-2">
                 {(isOwner || isEditor) && (
                     <Button
                         color="primary"
                         onPress={handleAddBasket}
-                        className="w-full sm:w-auto"
+                        className="w-full sm:w-auto bg-purple-500/80 backdrop-blur-md border border-white/20 text-gray-100 hover:bg-purple-600/80"
                         startContent={<PlusIcon className="w-4 h-4" />}
                         disabled={authLoading}
                     >
@@ -101,40 +101,49 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                     </Button>
                 )}
             </div>
-            <Accordion className="flex flex-col gap-2 px-0!" selectedKeys={expanded ? [expanded] : []} onSelectionChange={keys => setExpanded(Array.from(keys)[0] as string)}>
+            <Accordion
+                className="flex flex-col gap-2 px-0!"
+                selectedKeys={expanded ? [expanded] : []}
+                onSelectionChange={keys => setExpanded(Array.from(keys)[0] as string)}
+                itemClasses={{
+                    base: "backdrop-blur-md border border-white/20 rounded-lg px-4",
+                    title: "text-gray-100 font-semibold",
+                    trigger: "backdrop-blur-md hover:bg-white/10",
+                    content: "backdrop-blur-md border-t border-white/20"
+                }}
+            >
                 {baskets.map((b: any) => (
                     <AccordionItem
-                        variant="splitted"
                         key={b.id}
                         title={
                             <div className="flex items-center gap-2">
-                                <span className="text-lg font-bold">{b.name}</span>
+                                <span className="text-lg font-bold text-gray-100">{b.name}</span>
                                 {expanded === b.id && (
                                     <div className="flex items-center gap-1">
                                         <span
                                             role="button"
                                             tabIndex={0}
-                                            className="ml-2 p-1 rounded hover:bg-gray-200 cursor-pointer"
+                                            className="ml-2 p-1 rounded hover:bg-white/20 cursor-pointer"
                                             onClick={e => { e.stopPropagation(); handleEditBasketName(b); }}
                                             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); handleEditBasketName(b); } }}
                                             aria-label="Edit basket name"
                                         >
-                                            <PencilIcon className="w-5 h-5 text-gray-500" />
+                                            <PencilIcon className="w-5 h-5 text-yellow-300" />
                                         </span>
                                         {isOwner && (
                                             <>
-                                                <span className="text-xs text-blue-500 mx-1">
+                                                <span className="text-xs text-gray-100 bg-green-500/80 backdrop-blur-md px-2 py-1 rounded-full mx-1">
                                                     {isOwner ? 'OWNER' : 'NOT_OWNER'}
                                                 </span>
                                                 <span
                                                     role="button"
                                                     tabIndex={0}
-                                                    className="p-1 rounded hover:bg-red-100 cursor-pointer"
+                                                    className="group p-1 rounded hover:bg-red-500/20 cursor-pointer"
                                                     onClick={e => { e.stopPropagation(); handleDeleteBasket(b); }}
                                                     onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); handleDeleteBasket(b); } }}
                                                     aria-label="Delete basket"
                                                 >
-                                                    <TrashIcon className="w-5 h-5 text-red-500 hover:text-red-700" />
+                                                    <TrashIcon className="w-5 h-5 text-red-200 group-hover:text-red-300 transition-all" />
                                                 </span>
                                             </>
                                         )}
@@ -142,7 +151,6 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                                 )}
                             </div>
                         }
-                        className="font-bold px-5 py-2"
                     >
                         {/* Modal: Edit Basket Name */}
                         <Modal isOpen={modal === 'editBasketName'} onClose={() => setModal(null)} size="md">

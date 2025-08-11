@@ -108,19 +108,24 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                         value={searchInput}
                         onClear={() => onClear()}
                         onValueChange={onSearchChange}
+                        classNames={{
+                            input: "placeholder:text-gray-300 group-hover:placeholder:text-gray-400",
+                            inputWrapper: "group bg-white/10 backdrop-blur-md border border-white/20"
+                        }}
                     />
                     <div className="flex gap-3">
-                        <Button color="primary" onPress={onOpen} startContent={<PlusIcon className="w-4 h-4" />}>
+                        <Button color="primary" onPress={onOpen} startContent={<PlusIcon className="w-4 h-4" />}
+                            className="bg-purple-500/80 backdrop-blur-md border border-white/20 text-gray-100 hover:bg-purple-600/80">
                             Sales
                         </Button>
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span className="text-default-400 text-small">Total {filteredItems.length} sales</span>
-                    <label className="flex items-center text-default-400 text-small">
+                    <span className="text-gray-200 text-small">Total {filteredItems.length} sales</span>
+                    <label className="flex items-center text-gray-200 text-small">
                         Rows per page:
                         <select
-                            className="bg-transparent outline-none text-default-400 text-small ml-2"
+                            className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md outline-none text-gray-100 text-small ml-2 px-2 py-1"
                             value={rowsPerPage}
                             onChange={(e) => onRowsPerPageChange(e.target.value)}
                         >
@@ -150,7 +155,7 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                                 isCompact
                                 showControls
                                 showShadow
-                                color="primary"
+                                color="secondary"
                                 page={page}
                                 total={pages}
                                 onChange={(page) => setPage(page)}
@@ -160,8 +165,10 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                 }
                 bottomContentPlacement="outside"
                 classNames={{
-                    wrapper: "max-h-[350px] overflow-auto",
-                    table: "min-h-[200px]"
+                    wrapper: "max-h-[350px] overflow-auto bg-white/10 backdrop-blur-md rounded-lg border border-white/20",
+                    table: "min-h-[200px]",
+                    th: "bg-white/20 backdrop-blur-md text-gray-100 font-semibold border-b border-white/20",
+                    td: "text-gray-100 border-b border-white/10"
                 }}
             >
                 <TableHeader>
@@ -180,7 +187,7 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                         return (
                             <TableRow
                                 key={s.id}
-                                className={`cursor-pointer hover:bg-gray-100 ${isSelected ? 'bg-gray-300' : ''}`}
+                                className={`cursor-pointer hover:bg-white/20 ${isSelected ? 'bg-white/30' : ''}`}
                                 onClick={() => setRowMenu(s.id)}
                             >
                                 <TableCell>
@@ -198,7 +205,7 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                                     <ul className="list-disc ml-4">
                                         {(s.products || []).map((p: any) => (
                                             <li key={p.productId}>
-                                                {p.productName} <span className="text-xs text-gray-500">x{p.qty}</span>
+                                                {p.productName} <span className="text-xs text-gray-300">x{p.qty}</span>
                                             </li>
                                         ))}
                                     </ul>

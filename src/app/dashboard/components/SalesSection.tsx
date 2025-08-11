@@ -7,7 +7,7 @@ export default function SalesSection({ baskets, refreshBaskets }: { baskets: any
     const [sales, setSales] = useState<any[]>([]);
 
     useEffect(() => { fetchSales(); }, []);
-    
+
     const fetchSales = async () => {
         const data = await getAllSales();
         setSales(data);
@@ -21,10 +21,10 @@ export default function SalesSection({ baskets, refreshBaskets }: { baskets: any
     return (
         <div className="mb-8 w-full max-w-3xl mx-auto px-2 sm:px-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2">
-                <h2 className="text-lg sm:text-xl font-bold">Sales History</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-gray-100">Sales History</h2>
             </div>
-            
-            <SalesTable 
+
+            <SalesTable
                 sales={sales}
                 baskets={baskets}
                 onSaleComplete={handleSaleComplete}
