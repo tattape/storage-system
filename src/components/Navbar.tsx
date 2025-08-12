@@ -23,14 +23,19 @@ export default function Navbar() {
     ];
 
     const handleMenuItemClick = (href: string) => {
+        // ปิด menu ผ่าน HeroUI's onMenuOpenChange
         setIsMenuOpen(false);
-        router.push(href);
+        // Navigate หลังจาก menu ปิด
+        setTimeout(() => {
+            router.push(href);
+        }, 200);
     };
 
     return (
         <HeroNavbar 
             className="sticky top-0 z-50 bg-white/15 shadow-md backdrop-blur-2xl"
             onMenuOpenChange={setIsMenuOpen}
+            isMenuOpen={isMenuOpen}
         >
             <NavbarContent>
                 <NavbarMenuToggle
