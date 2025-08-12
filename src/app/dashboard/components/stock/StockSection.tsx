@@ -227,6 +227,7 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                 isOpen={modal === 'basket'} 
                 onClose={() => setModal(null)} 
                 size="md"
+                isDismissable={false}
                 placement={modalPlacement}
                 classNames={{
                     base: modalClassName,

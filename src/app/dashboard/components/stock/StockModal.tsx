@@ -81,7 +81,7 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
             isOpen={isOpen} 
             onClose={handleCloseModal} 
             size="md" 
-            isDismissable={true}
+            isDismissable={step === 0}
             placement={modalPlacement}
             classNames={{
                 base: modalClassName,

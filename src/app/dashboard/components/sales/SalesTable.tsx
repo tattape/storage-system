@@ -6,6 +6,7 @@ import { deleteSale } from "../../../../services/sales";
 import SalesModal from "./SalesModal";
 import EditSalesModal from "./EditSalesModal";
 import { EditIcon, DeleteIcon, PlusIcon } from "../../../../components/icons";
+import { useAuth } from "../../../../hooks/useAuth";
 
 interface SalesTableProps {
     sales: any[];
@@ -14,6 +15,9 @@ interface SalesTableProps {
 }
 
 export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTableProps) {
+    // Authentication hook
+    const { isOwner } = useAuth();
+    
     const [page, setPage] = useState(1);
     const [rowMenu, setRowMenu] = useState<string | null>(null);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -220,7 +224,7 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                                         <ul className="list-disc ml-4 mb-2">
                                             {(s.products || []).map((p: any) => (
                                                 <li key={p.productId} className="text-sm">
-                                                    {p.productName} <span className="text-xs text-gray-300">x{p.qty}</span>
+                                                    {p.productName} <span className="text-base font-bold text-blue-300">x{p.qty}</span>
                                                 </li>
                                             ))}
                                         </ul>
@@ -242,14 +246,16 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                                                     >
                                                         Edit
                                                     </DropdownItem>
-                                                    <DropdownItem
-                                                        key="delete"
-                                                        color="danger"
-                                                        onClick={() => handleDeleteSale(s)}
-                                                        startContent={<DeleteIcon className="w-4 h-4 text-danger" />}
-                                                    >
-                                                        Delete
-                                                    </DropdownItem>
+                                                    {isOwner ? (
+                                                        <DropdownItem
+                                                            key="delete"
+                                                            color="danger"
+                                                            onClick={() => handleDeleteSale(s)}
+                                                            startContent={<DeleteIcon className="w-4 h-4 text-danger" />}
+                                                        >
+                                                            Delete
+                                                        </DropdownItem>
+                                                    ) : null}
                                                 </DropdownMenu>
                                             </Dropdown>
                                         </div>

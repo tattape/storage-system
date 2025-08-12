@@ -87,6 +87,7 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
             isOpen={isOpen} 
             onClose={handleCloseModal} 
             size="md"
+            isDismissable={false}
             placement={modalPlacement}
             classNames={{
                 base: modalClassName,

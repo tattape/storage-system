@@ -115,7 +115,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
             isOpen={isOpen} 
             onClose={handleCloseModal} 
             size="xl" 
-            isDismissable={true} 
+            isDismissable={step === 0} 
             hideCloseButton={false}
             placement={modalPlacement}
             classNames={{
@@ -234,6 +234,14 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                                 <Button 
                                                     size="sm" 
                                                     variant="bordered"
+                                                    onPress={() => setProductCounts(c => ({ ...c, [p.id]: 5 }))}
+                                                    className="px-3 text-xs min-w-unit-12"
+                                                >
+                                                    5
+                                                </Button>
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="bordered"
                                                     onPress={() => setProductCounts(c => ({ ...c, [p.id]: 10 }))}
                                                     className="px-3 text-xs min-w-unit-12"
                                                 >
@@ -242,18 +250,10 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                                 <Button 
                                                     size="sm" 
                                                     variant="bordered"
-                                                    onPress={() => setProductCounts(c => ({ ...c, [p.id]: 20 }))}
+                                                    onPress={() => setProductCounts(c => ({ ...c, [p.id]: 15 }))}
                                                     className="px-3 text-xs min-w-unit-12"
                                                 >
-                                                    20
-                                                </Button>
-                                                <Button 
-                                                    size="sm" 
-                                                    variant="bordered"
-                                                    onPress={() => setProductCounts(c => ({ ...c, [p.id]: 30 }))}
-                                                    className="px-3 text-xs min-w-unit-12"
-                                                >
-                                                    30
+                                                    15
                                                 </Button>
                                             </div>
                                             
@@ -292,6 +292,15 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                         <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">{productCounts[p.id] || 0} pcs</span>
                                     </div>
                                 ))}
+                                {/* Total Summary */}
+                                {products.filter((p: any) => (productCounts[p.id] || 0) > 0).length > 0 && (
+                                    <div className="flex justify-between items-center py-3 px-4 bg-blue-50 rounded-lg border-t-2 border-blue-200 mt-4">
+                                        <span className="font-bold text-blue-800">Total Quantity:</span>
+                                        <span className="bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-bold">
+                                            {Object.values(productCounts).reduce((sum, count) => sum + (count || 0), 0)} pcs
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

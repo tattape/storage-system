@@ -117,6 +117,7 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
             onClose={handleClose} 
             size="lg" 
             scrollBehavior="inside"
+            isDismissable={false}
             placement={modalPlacement}
             classNames={{
                 base: modalClassName,
@@ -207,6 +208,14 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
                                         <Button 
                                             size="sm" 
                                             variant="bordered"
+                                            onClick={() => setEditProductCounts(c => ({ ...c, [p.id]: 5 }))}
+                                            className="px-3 text-xs min-w-unit-12"
+                                        >
+                                            5
+                                        </Button>
+                                        <Button 
+                                            size="sm" 
+                                            variant="bordered"
                                             onClick={() => setEditProductCounts(c => ({ ...c, [p.id]: 10 }))}
                                             className="px-3 text-xs min-w-unit-12"
                                         >
@@ -215,18 +224,10 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
                                         <Button 
                                             size="sm" 
                                             variant="bordered"
-                                            onClick={() => setEditProductCounts(c => ({ ...c, [p.id]: 20 }))}
+                                            onClick={() => setEditProductCounts(c => ({ ...c, [p.id]: 15 }))}
                                             className="px-3 text-xs min-w-unit-12"
                                         >
-                                            20
-                                        </Button>
-                                        <Button 
-                                            size="sm" 
-                                            variant="bordered"
-                                            onClick={() => setEditProductCounts(c => ({ ...c, [p.id]: 30 }))}
-                                            className="px-3 text-xs min-w-unit-12"
-                                        >
-                                            30
+                                            15
                                         </Button>
                                     </div>
                                     
@@ -234,6 +235,18 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
                                 </div>
                             ))}
                                 </div>
+                                
+                                {/* Total Summary */}
+                                {Object.values(editProductCounts).some(count => (count || 0) > 0) && (
+                                    <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                        <div className="flex justify-between items-center">
+                                            <span className="font-bold text-blue-800">Total Quantity:</span>
+                                            <span className="bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-bold">
+                                                {Object.values(editProductCounts).reduce((sum, count) => sum + (count || 0), 0)} pcs
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

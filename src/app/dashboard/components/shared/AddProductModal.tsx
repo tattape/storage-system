@@ -107,6 +107,7 @@ export default function AddProductModal({ isOpen, onClose, basketId, onProductAd
             isOpen={isOpen} 
             onClose={handleClose} 
             size="md"
+            isDismissable={false}
             placement={modalPlacement}
             classNames={{
                 base: modalClassName,
