@@ -1,14 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Accordion, AccordionItem, Input } from "@heroui/react";
-import { createBasket, deleteProductFromBasket, updateBasketName, deleteBasket } from "../../../services/baskets";
-import { PencilIcon, TrashIcon, PlusIcon } from "../../../components/icons";
+import { createBasket, deleteProductFromBasket, updateBasketName, deleteBasket } from "../../../../services/baskets";
+import { PencilIcon, TrashIcon, PlusIcon } from "../../../../components/icons";
 import StockTable from "./StockTable";
-import EditProductModal from "./EditProductModal";
-import { useAuth } from "../../../hooks/useAuth";
-import { useKeyboardHeight } from "../../../hooks/useKeyboardHeight";
-
-
+import EditProductModal from "../shared/EditProductModal";
+import { useAuth } from "../../../../hooks/useAuth";
+import { useKeyboardHeight } from "../../../../hooks/useKeyboardHeight";
 
 export default function StockSection({ baskets, refreshBaskets }: { baskets: any[]; refreshBaskets: () => void }) {
     // Authentication hook

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { getAllSales } from "../../../services/sales";
+import { getAllSales } from "../../../../services/sales";
 import SalesTable from "./SalesTable";
 
 export default function SalesSection({ baskets, refreshBaskets }: { baskets: any[]; refreshBaskets: () => void }) {

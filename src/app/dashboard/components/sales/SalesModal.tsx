@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Card, Image, Input } from "@heroui/react";
-import { updateProductInBasket } from "../../../services/baskets";
-import { addSale } from "../../../services/sales";
-import { useKeyboardHeight } from "../../../hooks/useKeyboardHeight";
+import { updateProductInBasket } from "../../../../services/baskets";
+import { addSale } from "../../../../services/sales";
+import { useKeyboardHeight } from "../../../../hooks/useKeyboardHeight";
 
 interface SalesModalProps {
     isOpen: boolean;
@@ -190,58 +190,74 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                     )}
 
                     {step === 1 && (
-                        <div className="min-h-[300px]">
-                            <div className="w-full space-y-3">
+                        <div className="w-full">
+                            <div className="w-full space-y-3 max-h-[400px] overflow-y-auto pr-2">
                                 {products.map((p: any) => (
                                     <div key={p.id} className="bg-gray-50 rounded-lg p-4 relative">
-                                        <div className="flex flex-col sm:flex-row items-center gap-3">
-                                            <span className="font-medium text-sm sm:text-base min-w-[80px] text-center sm:text-left">{p.name}</span>
-                                            <div className="flex flex-col items-center gap-2">
-                                                {/* Quick set buttons */}
-                                                <div className="flex gap-1">
-                                                    <Button 
-                                                        size="sm" 
-                                                        variant="bordered"
-                                                        onPress={() => setProductCounts(c => ({ ...c, [p.id]: 10 }))}
-                                                        className="px-2 text-xs"
-                                                    >
-                                                        10
-                                                    </Button>
-                                                    <Button 
-                                                        size="sm" 
-                                                        variant="bordered"
-                                                        onPress={() => setProductCounts(c => ({ ...c, [p.id]: 20 }))}
-                                                        className="px-2 text-xs"
-                                                    >
-                                                        20
-                                                    </Button>
-                                                    <Button 
-                                                        size="sm" 
-                                                        variant="bordered"
-                                                        onPress={() => setProductCounts(c => ({ ...c, [p.id]: 30 }))}
-                                                        className="px-2 text-xs"
-                                                    >
-                                                        30
-                                                    </Button>
+                                        <div className="flex flex-col items-center gap-3">
+                                            <span className="font-medium text-sm sm:text-base text-center">{p.name}</span>
+                                            
+                                            {/* Quantity controls */}
+                                            <div className="flex items-center gap-3">
+                                                <Button 
+                                                    size="md" 
+                                                    onPress={() => setProductCounts(c => ({ ...c, [p.id]: Math.max((c[p.id] || 0) - 1, 0) }))}
+                                                    className="min-w-unit-12 h-12 text-lg font-bold"
+                                                >
+                                                    -
+                                                </Button>
+                                                <div className="relative">
+                                                    <Input
+                                                        type="number"
+                                                        label="Quantity"
+                                                        value={(productCounts[p.id] || 0).toString()}
+                                                        onChange={(e) => setProductCounts(c => ({ ...c, [p.id]: Math.max(Number(e.target.value), 0) }))}
+                                                        className="w-20 text-center flex justify-center"
+                                                        size="md"
+                                                        classNames={{
+                                                            input: "text-lg font-semibold text-center",
+                                                            inputWrapper: "h-12"
+                                                        }}
+                                                    />
                                                 </div>
-                                                
-                                                {/* Quantity controls */}
-                                                <div className="flex items-center gap-2">
-                                                    <Button size="sm" onPress={() => setProductCounts(c => ({ ...c, [p.id]: Math.max((c[p.id] || 0) - 1, 0) }))}>-</Button>
-                                                    <div className="relative">
-                                                        <Input
-                                                            type="number"
-                                                            label="Quantity"
-                                                            value={(productCounts[p.id] || 0).toString()}
-                                                            onChange={(e) => setProductCounts(c => ({ ...c, [p.id]: Math.max(Number(e.target.value), 0) }))}
-                                                            className="w-16 text-center flex justify-center"
-                                                            size="sm"
-                                                        />
-                                                    </div>
-                                                    <Button size="sm" onPress={() => setProductCounts(c => ({ ...c, [p.id]: (c[p.id] || 0) + 1 }))}>+</Button>
-                                                </div>
+                                                <Button 
+                                                    size="md" 
+                                                    onPress={() => setProductCounts(c => ({ ...c, [p.id]: (c[p.id] || 0) + 1 }))}
+                                                    className="min-w-unit-12 h-12 text-lg font-bold"
+                                                >
+                                                    +
+                                                </Button>
                                             </div>
-                                            <span className="text-base lg:text-xs text-gray-400">(In stock: {p.stock})</span>
+                                            
+                                            {/* Quick set buttons - below */}
+                                            <div className="flex gap-2 justify-center">
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="bordered"
+                                                    onPress={() => setProductCounts(c => ({ ...c, [p.id]: 10 }))}
+                                                    className="px-3 text-xs min-w-unit-12"
+                                                >
+                                                    10
+                                                </Button>
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="bordered"
+                                                    onPress={() => setProductCounts(c => ({ ...c, [p.id]: 20 }))}
+                                                    className="px-3 text-xs min-w-unit-12"
+                                                >
+                                                    20
+                                                </Button>
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="bordered"
+                                                    onPress={() => setProductCounts(c => ({ ...c, [p.id]: 30 }))}
+                                                    className="px-3 text-xs min-w-unit-12"
+                                                >
+                                                    30
+                                                </Button>
+                                            </div>
+                                            
+                                            <span className="text-xs text-gray-400 text-center">(In stock: {p.stock})</span>
                                         </div>
                                     </div>
                                 ))}
@@ -250,7 +266,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                     )}
 
                     {step === 2 && (
-                        <div className="min-h-[300px]">
+                        <div className="w-full">
                             <div className="mb-4 font-semibold text-lg text-center">Customer Information</div>
                             <div className="w-full max-w-md mx-auto space-y-4 mb-6">
                                 <Input
@@ -269,7 +285,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                 />
                             </div>
                             <div className="mb-4 font-semibold text-lg text-center">Order Summary</div>
-                            <div className="w-full max-w-md mx-auto space-y-2">
+                            <div className="w-full max-w-md mx-auto space-y-2 max-h-[200px] overflow-y-auto pr-2">
                                 {products.filter((p: any) => (productCounts[p.id] || 0) > 0).map((p: any) => (
                                     <div key={p.id} className="flex justify-between items-center py-2 px-4 bg-gray-50 rounded-lg">
                                         <span className="font-medium">{p.name}</span>

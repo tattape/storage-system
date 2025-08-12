@@ -1,9 +1,9 @@
 "use client";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownMenu, DropdownItem, DropdownTrigger, Pagination, Input, Button, useDisclosure } from "@heroui/react";
-import AddProductModal from "./AddProductModal";
+import AddProductModal from "../shared/AddProductModal";
 import StockModal from "./StockModal";
-import { StockIcon, EditIcon, DeleteIcon, PlusIcon } from "../../../components/icons";
+import { StockIcon, EditIcon, DeleteIcon, PlusIcon } from "../../../../components/icons";
 
 interface StockTableProps {
     products: any[];

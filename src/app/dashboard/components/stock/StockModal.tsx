@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Card, Input } from "@heroui/react";
-import { updateProductInBasket } from "../../../services/baskets";
-import { useKeyboardHeight } from "../../../hooks/useKeyboardHeight";
+import { updateProductInBasket } from "../../../../services/baskets";
+import { useKeyboardHeight } from "../../../../hooks/useKeyboardHeight";
 
 interface StockModalProps {
     isOpen: boolean;
@@ -127,22 +127,22 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
                                 <Card 
                                     isPressable 
                                     onClick={() => handleActionSelect('add')}
-                                    className="p-6 border-2 border-transparent hover:border-green-500 transition-all"
+                                    className="p-6 border-2 border-transparent hover:border-green-500 transition-all min-h-[120px] flex items-center justify-center"
                                 >
-                                    <div className="text-center">
-                                        <div className="text-3xl mb-2">➕</div>
-                                        <div className="font-semibold text-green-600">Add Stock</div>
+                                    <div className="text-center flex flex-col items-center justify-center">
+                                        <div className="text-4xl mb-3">➕</div>
+                                        <div className="font-semibold text-green-600 text-lg mb-1">Add Stock</div>
                                         <div className="text-sm text-gray-500">Increase inventory</div>
                                     </div>
                                 </Card>
                                 <Card 
                                     isPressable 
                                     onClick={() => handleActionSelect('remove')}
-                                    className="p-6 border-2 border-transparent hover:border-red-500 transition-all"
+                                    className="p-6 border-2 border-transparent hover:border-red-500 transition-all min-h-[120px] flex items-center justify-center"
                                 >
-                                    <div className="text-center">
-                                        <div className="text-3xl mb-2">➖</div>
-                                        <div className="font-semibold text-red-600">Remove Stock</div>
+                                    <div className="text-center flex flex-col items-center justify-center">
+                                        <div className="text-4xl mb-3">➖</div>
+                                        <div className="font-semibold text-red-600 text-lg mb-1">Remove Stock</div>
                                         <div className="text-sm text-gray-500">Decrease inventory</div>
                                     </div>
                                 </Card>
@@ -194,9 +194,10 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
                                     {/* Quantity controls */}
                                     <div className="flex items-center gap-3">
                                         <Button 
-                                            size="sm" 
+                                            size="md" 
                                             onPress={() => setQuantity(Math.max(0, quantity - 1))}
                                             isDisabled={quantity <= 0}
+                                            className="min-w-unit-12 h-12 text-lg font-bold"
                                         >
                                             -
                                         </Button>
@@ -205,13 +206,18 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
                                             label="Quantity"
                                             value={quantity.toString()}
                                             onChange={(e) => setQuantity(Math.max(0, Number(e.target.value)))}
-                                            className="w-24 text-center"
+                                            className="w-20 text-center"
                                             placeholder="0"
-                                            size="sm"
+                                            size="md"
+                                            classNames={{
+                                                input: "text-lg font-semibold text-center",
+                                                inputWrapper: "h-12"
+                                            }}
                                         />
                                         <Button 
-                                            size="sm" 
+                                            size="md" 
                                             onPress={() => setQuantity(quantity + 1)}
+                                            className="min-w-unit-12 h-12 text-lg font-bold"
                                         >
                                             +
                                         </Button>

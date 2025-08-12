@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Input } from "@heroui/react";
-import { updateProductInBasket } from "../../../services/baskets";
-import { addSale, deleteSale } from "../../../services/sales";
-import { useKeyboardHeight } from "../../../hooks/useKeyboardHeight";
+import { updateProductInBasket } from "../../../../services/baskets";
+import { addSale, deleteSale } from "../../../../services/sales";
+import { useKeyboardHeight } from "../../../../hooks/useKeyboardHeight";
 
 interface EditSalesModalProps {
     isOpen: boolean;
@@ -158,73 +158,79 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
                                 <h4 className="font-medium text-gray-700 mb-2 sticky top-0 bg-white z-10">Products</h4>
                                 <div className="max-h-[180px] overflow-y-auto space-y-2 pr-2">
                                     {(basket.products || []).map((p: any) => (
-                                <div key={p.id} className="flex flex-col sm:flex-row items-center gap-2 mb-2">
-                                    <span className="w-24 text-sm sm:text-base">{p.name}</span>
-                                    <div className="flex flex-col items-center gap-2">
-                                        {/* Quick set buttons */}
-                                        <div className="flex gap-1">
-                                            <Button 
-                                                size="sm" 
-                                                variant="bordered"
-                                                onClick={() => setEditProductCounts(c => ({ ...c, [p.id]: 10 }))}
-                                                className="px-2 text-xs"
-                                            >
-                                                10
-                                            </Button>
-                                            <Button 
-                                                size="sm" 
-                                                variant="bordered"
-                                                onClick={() => setEditProductCounts(c => ({ ...c, [p.id]: 20 }))}
-                                                className="px-2 text-xs"
-                                            >
-                                                20
-                                            </Button>
-                                            <Button 
-                                                size="sm" 
-                                                variant="bordered"
-                                                onClick={() => setEditProductCounts(c => ({ ...c, [p.id]: 30 }))}
-                                                className="px-2 text-xs"
-                                            >
-                                                30
-                                            </Button>
-                                        </div>
-                                        
-                                        {/* Quantity controls */}
-                                        <div className="flex items-center gap-2">
-                                            <Button 
-                                                size="sm" 
-                                                onClick={() => setEditProductCounts(c => ({ 
+                                <div key={p.id} className="flex flex-col items-center gap-3 mb-4 bg-gray-50 rounded-lg p-4">
+                                    <span className="font-medium text-sm sm:text-base text-center">{p.name}</span>
+                                    
+                                    {/* Quantity controls */}
+                                    <div className="flex items-center gap-3">
+                                        <Button 
+                                            size="md" 
+                                            onClick={() => setEditProductCounts(c => ({ 
+                                                ...c, 
+                                                [p.id]: Math.max((c[p.id] || 0) - 1, 0) 
+                                            }))}
+                                            className="min-w-unit-12 h-12 text-lg font-bold"
+                                        >
+                                            -
+                                        </Button>
+                                        <div className="relative">
+                                            <Input
+                                                type="number"
+                                                label="Quantity"
+                                                value={(editProductCounts[p.id] || 0).toString()}
+                                                onChange={(e) => setEditProductCounts(c => ({ 
                                                     ...c, 
-                                                    [p.id]: Math.max((c[p.id] || 0) - 1, 0) 
+                                                    [p.id]: Math.max(Number(e.target.value), 0) 
                                                 }))}
-                                            >
-                                                -
-                                            </Button>
-                                            <div className="relative">
-                                                <Input
-                                                    type="number"
-                                                    label="Quantity"
-                                                    value={(editProductCounts[p.id] || 0).toString()}
-                                                    onChange={(e) => setEditProductCounts(c => ({ 
-                                                        ...c, 
-                                                        [p.id]: Math.max(Number(e.target.value), 0) 
-                                                    }))}
-                                                    className="w-16 text-center"
-                                                    size="sm"
-                                                />
-                                            </div>
-                                            <Button 
-                                                size="sm" 
-                                                onClick={() => setEditProductCounts(c => ({ 
-                                                    ...c, 
-                                                    [p.id]: (c[p.id] || 0) + 1 
-                                                }))}
-                                            >
-                                                +
-                                            </Button>
+                                                className="w-20 text-center"
+                                                size="md"
+                                                classNames={{
+                                                    input: "text-lg font-semibold text-center",
+                                                    inputWrapper: "h-12"
+                                                }}
+                                            />
                                         </div>
+                                        <Button 
+                                            size="md" 
+                                            onClick={() => setEditProductCounts(c => ({ 
+                                                ...c, 
+                                                [p.id]: (c[p.id] || 0) + 1 
+                                            }))}
+                                            className="min-w-unit-12 h-12 text-lg font-bold"
+                                        >
+                                            +
+                                        </Button>
                                     </div>
-                                    <span className="text-xs text-gray-400">(In stock: {p.stock})</span>
+                                    
+                                    {/* Quick set buttons - below */}
+                                    <div className="flex gap-2 justify-center">
+                                        <Button 
+                                            size="sm" 
+                                            variant="bordered"
+                                            onClick={() => setEditProductCounts(c => ({ ...c, [p.id]: 10 }))}
+                                            className="px-3 text-xs min-w-unit-12"
+                                        >
+                                            10
+                                        </Button>
+                                        <Button 
+                                            size="sm" 
+                                            variant="bordered"
+                                            onClick={() => setEditProductCounts(c => ({ ...c, [p.id]: 20 }))}
+                                            className="px-3 text-xs min-w-unit-12"
+                                        >
+                                            20
+                                        </Button>
+                                        <Button 
+                                            size="sm" 
+                                            variant="bordered"
+                                            onClick={() => setEditProductCounts(c => ({ ...c, [p.id]: 30 }))}
+                                            className="px-3 text-xs min-w-unit-12"
+                                        >
+                                            30
+                                        </Button>
+                                    </div>
+                                    
+                                    <span className="text-xs text-gray-400 text-center">(In stock: {p.stock})</span>
                                 </div>
                             ))}
                                 </div>

@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Input } from "@heroui/react";
-import { addProductToBasket } from "../../../services/baskets";
-import { useKeyboardHeight } from "../../../hooks/useKeyboardHeight";
+import { addProductToBasket } from "../../../../services/baskets";
+import { useKeyboardHeight } from "../../../../hooks/useKeyboardHeight";
 
 interface AddProductModalProps {
     isOpen: boolean;

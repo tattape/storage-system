@@ -1,11 +1,11 @@
 "use client";
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownMenu, DropdownItem, DropdownTrigger, Pagination, Input, Button, useDisclosure } from "@heroui/react";
-import { updateProductInBasket } from "../../../services/baskets";
-import { deleteSale } from "../../../services/sales";
+import { updateProductInBasket } from "../../../../services/baskets";
+import { deleteSale } from "../../../../services/sales";
 import SalesModal from "./SalesModal";
 import EditSalesModal from "./EditSalesModal";
-import { EditIcon, DeleteIcon, PlusIcon } from "../../../components/icons";
+import { EditIcon, DeleteIcon, PlusIcon } from "../../../../components/icons";
 
 interface SalesTableProps {
     sales: any[];
@@ -172,11 +172,13 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                 }}
             >
                 <TableHeader>
-                    <TableColumn>Date</TableColumn>
+                    <TableColumn className="hidden sm:table-cell">Date</TableColumn>
                     <TableColumn>Customer</TableColumn>
-                    <TableColumn>Tracking</TableColumn>
-                    <TableColumn>Basket</TableColumn>
-                    <TableColumn>Products</TableColumn>
+                    <TableColumn className="hidden md:table-cell">Tracking</TableColumn>
+                    <TableColumn className="hidden lg:table-cell">Basket</TableColumn>
+                    <TableColumn className="min-w-[200px] sm:w-full">Products</TableColumn>
+                    <TableColumn>Qty</TableColumn>
+                    <TableColumn>Price</TableColumn>
                 </TableHeader>
                 <TableBody emptyContent={"No sales found"}>
                     {items.map((s: any) => {
@@ -190,7 +192,7 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                                 className={`cursor-pointer hover:bg-white/20 ${isSelected ? 'bg-white/30' : ''}`}
                                 onClick={() => setRowMenu(s.id)}
                             >
-                                <TableCell>
+                                <TableCell className="hidden sm:table-cell">
                                     {s.date ?
                                         (typeof s.date === 'string' ?
                                             s.date :
@@ -198,17 +200,36 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                                         ) : '-'
                                     }
                                 </TableCell>
-                                <TableCell>{s.customerName || '-'}</TableCell>
-                                <TableCell>{s.trackingNumber || '-'}</TableCell>
-                                <TableCell>{basketName}</TableCell>
-                                <TableCell className="relative">
-                                    <ul className="list-disc ml-4">
-                                        {(s.products || []).map((p: any) => (
-                                            <li key={p.productId}>
-                                                {p.productName} <span className="text-xs text-gray-300">x{p.qty}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
+                                <TableCell>
+                                    <div className="flex flex-col">
+                                        <span>{s.customerName || '-'}</span>
+                                        <span className="text-xs text-gray-400 sm:hidden">
+                                            {s.date ?
+                                                (typeof s.date === 'string' ?
+                                                    s.date :
+                                                    (s.date.toLocaleString ? s.date.toLocaleString() : String(s.date))
+                                                ) : '-'
+                                            }
+                                        </span>
+                                    </div>
+                                </TableCell>
+                                <TableCell className="hidden md:table-cell">{s.trackingNumber || '-'}</TableCell>
+                                <TableCell className="hidden lg:table-cell">{basketName}</TableCell>
+                                <TableCell className="relative w-full min-w-[250px] sm:w-full">
+                                    <div className="flex flex-col">
+                                        <ul className="list-disc ml-4 mb-2">
+                                            {(s.products || []).map((p: any) => (
+                                                <li key={p.productId} className="text-sm">
+                                                    {p.productName} <span className="text-xs text-gray-300">x{p.qty}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                        {/* Mobile info */}
+                                        <div className="text-xs text-gray-400 space-y-1 md:hidden">
+                                            <div>Tracking: {s.trackingNumber || '-'}</div>
+                                            <div className="lg:hidden">Basket: {basketName}</div>
+                                        </div>
+                                    </div>
                                     {isSelected && (
                                         <div className="absolute z-10 right-0 top-6">
                                             <Dropdown placement="right-start" isOpen onClose={() => setRowMenu(null)}>
@@ -233,6 +254,21 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                                             </Dropdown>
                                         </div>
                                     )}
+                                </TableCell>
+                                <TableCell>
+                                    <span className="font-semibold text-blue-300 text-sm">
+                                        {(s.products || []).reduce((total: number, p: any) => total + (p.qty || 0), 0)}
+                                        <span className="hidden sm:inline"> pcs</span>
+                                    </span>
+                                </TableCell>
+                                <TableCell>
+                                    <span className="font-semibold text-green-300 text-sm">
+                                        ฿{(s.products || []).reduce((total: number, p: any) => {
+                                            const product = currentBasket?.products?.find((bp: any) => bp.id === p.productId);
+                                            const price = product?.price || 0;
+                                            return total + ((p.qty || 0) * price);
+                                        }, 0).toLocaleString()}
+                                    </span>
                                 </TableCell>
                             </TableRow>
                         );

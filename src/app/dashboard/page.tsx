@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Spinner } from "@heroui/react";
-import SalesSection from "./components/SalesSection";
-import StockSection from "./components/StockSection";
+import SalesSection from "./components/sales/SalesSection";
+import StockSection from "./components/stock/StockSection";
 import { getAllBaskets } from "../../services/baskets";
 import { useAuth } from "../../hooks/useAuth";
 import DarkVeil from "../../components/DarkVeil";
