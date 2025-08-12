@@ -90,7 +90,7 @@ export default function DashboardPage() {
       <div className="relative z-10 min-h-screen flex flex-col">
         <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-4 py-4 gap-4 w-full max-w-6xl mx-auto">
           <h1 className="text-2xl sm:text-3xl font-bold mb-4 text-white text-center w-full drop-shadow-lg">
-            Welcome to the Dashboard
+            Dashboard
           </h1>
 
           <SalesSection baskets={baskets} refreshBaskets={fetchBaskets} />
