@@ -53,7 +53,7 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
         if (action === 'add') {
             newStock = currentStock + quantity;
         } else if (action === 'remove') {
-            newStock = Math.max(0, currentStock - quantity);
+            newStock = currentStock - quantity; // Allow negative stock
         }
 
         await updateProductInBasket(basketId, product.id, { stock: newStock });
@@ -98,7 +98,9 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
                     {product && (
                         <div className="text-sm text-gray-600">
                             Product: <span className="font-medium">{product.name}</span> | 
-                            Current Stock: <span className="font-medium">{product.stock || 0}</span>
+                            Current Stock: <span className={`font-medium ${(product.stock || 0) < 0 ? 'text-red-600' : ''}`}>
+                                {product.stock !== undefined ? product.stock : 0}
+                            </span>
                         </div>
                     )}
                     {/* Step Indicator */}
@@ -157,7 +159,9 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
                                     {action === 'add' ? 'Add Stock' : 'Remove Stock'}
                                 </h4>
                                 <div className="text-sm text-gray-600 mb-4">
-                                    Current Stock: <span className="font-medium">{product?.stock || 0}</span>
+                                    Current Stock: <span className={`font-medium ${(product?.stock || 0) < 0 ? 'text-red-600' : ''}`}>
+                                        {product?.stock !== undefined ? product?.stock : 0}
+                                    </span>
                                 </div>
                             </div>
                             
@@ -233,7 +237,7 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
                                         <span className={action === 'add' ? 'text-green-600' : 'text-red-600'}>
                                             {action === 'add' 
                                                 ? (Number(product?.stock) || 0) + quantity
-                                                : Math.max(0, (Number(product?.stock) || 0) - quantity)
+                                                : (Number(product?.stock) || 0) - quantity
                                             }
                                         </span>
                                     </div>

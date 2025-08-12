@@ -69,7 +69,8 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
             const newQty = editProductCounts[p.id] || 0;
             const diff = newQty - oldQty;
             if (diff !== 0) {
-                await updateProductInBasket(basket.id, p.id, { stock: (p.stock || 0) - diff });
+                const currentStock = p.stock !== undefined ? p.stock : 0;
+                await updateProductInBasket(basket.id, p.id, { stock: currentStock - diff });
             }
         }
 
@@ -231,7 +232,11 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
                                         </Button>
                                     </div>
                                     
-                                    <span className="text-xs text-gray-400 text-center">(In stock: {p.stock})</span>
+                                    <span className="text-xs text-gray-400 text-center">
+                                        (In stock: <span className={`${(p.stock || 0) < 0 ? 'text-red-400 font-semibold' : ''}`}>
+                                            {p.stock !== undefined ? p.stock : 0}
+                                        </span>)
+                                    </span>
                                 </div>
                             ))}
                                 </div>

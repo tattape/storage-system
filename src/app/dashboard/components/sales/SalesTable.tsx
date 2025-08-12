@@ -93,7 +93,8 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
         for (const p of sale.products || []) {
             const prod = (basket.products || []).find((x: any) => x.id === p.productId);
             if (prod) {
-                await updateProductInBasket(basket.id, p.productId, { stock: (prod.stock || 0) + p.qty });
+                const currentStock = prod.stock !== undefined ? prod.stock : 0;
+                await updateProductInBasket(basket.id, p.productId, { stock: currentStock + p.qty });
             }
         }
         await deleteSale(sale.id);

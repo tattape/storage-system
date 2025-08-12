@@ -90,7 +90,8 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
         // Update stock for each product
         for (const p of saleProducts) {
             const prod = products.find((x: any) => x.id === p.productId);
-            await updateProductInBasket(basketId, p.productId, { stock: (prod?.stock || 0) - p.qty });
+            const currentStock = prod?.stock !== undefined ? prod.stock : 0;
+            await updateProductInBasket(basketId, p.productId, { stock: currentStock - p.qty });
         }
 
         handleCloseModal();
@@ -257,7 +258,11 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                                 </Button>
                                             </div>
                                             
-                                            <span className="text-xs text-gray-400 text-center">(In stock: {p.stock})</span>
+                                            <span className="text-xs text-gray-400 text-center">
+                                                (In stock: <span className={`${(p.stock || 0) < 0 ? 'text-red-400 font-semibold' : ''}`}>
+                                                    {p.stock !== undefined ? p.stock : 0}
+                                                </span>)
+                                            </span>
                                         </div>
                                     </div>
                                 ))}

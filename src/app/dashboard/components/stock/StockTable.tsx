@@ -72,7 +72,7 @@ export default function StockTable({ products, basketId, basket, onEdit, onDelet
     // คำนวณ Grand Total จากทุก products ที่ filter แล้ว
     const grandTotal = useMemo(() => {
         return filteredItems.reduce((total, product) => {
-            const stock = Number(product?.stock) || 0;
+            const stock = Number(product?.stock) !== undefined ? Number(product?.stock) : 0;
             const price = Number(product?.price) || 0;
             return total + (stock * price);
         }, 0);
@@ -202,7 +202,7 @@ export default function StockTable({ products, basketId, basket, onEdit, onDelet
                 <TableBody emptyContent={"No products found"}>
                     {items.map((p: any) => {
                         const isSelected = rowMenu === p.id;
-                        const stock = Number(p?.stock) || 0;
+                        const stock = p?.stock !== undefined ? Number(p?.stock) : 0;
                         const minStock = Number(p?.minStock) || 0;
                         const price = Number(p?.price) || 0;
                         const packSize = Number(p?.packSize) || 1;
@@ -217,11 +217,13 @@ export default function StockTable({ products, basketId, basket, onEdit, onDelet
                                 <TableCell>{p?.name || 'Unknown Product'}</TableCell>
                                 <TableCell className="relative">
                                     <span className={
-                                        stock <= minStock
-                                            ? "text-red-300 font-bold"
-                                            : stock <= (packSize * 2)
-                                                ? "text-orange-300 font-medium"
-                                                : "text-gray-200"
+                                        stock < 0
+                                            ? "text-red-400 font-bold bg-red-900/20 px-2 py-1 rounded"
+                                            : stock <= minStock
+                                                ? "text-red-300 font-bold"
+                                                : stock <= (packSize * 2)
+                                                    ? "text-orange-300 font-medium"
+                                                    : "text-gray-200"
                                     }>
                                         {stock}
                                     </span>
