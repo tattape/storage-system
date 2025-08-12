@@ -5,18 +5,21 @@ export function useKeyboardHeight() {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   
   useEffect(() => {
-    // Check if device is mobile or tablet
-    const isMobile = typeof window !== 'undefined' && 
-      (window.innerWidth <= 768 || /iPad|iPhone|iPod/.test(navigator.userAgent));
+    // Check if device is mobile or tablet (including iPad)
+    const isMobileOrTablet = typeof window !== 'undefined' && 
+      (window.innerWidth <= 1024 || /iPad|iPhone|iPod|Android/i.test(navigator.userAgent));
     
-    if (!isMobile) return;
+    if (!isMobileOrTablet) return;
 
     const handleViewportChange = () => {
       if (typeof window !== 'undefined') {
         const viewportHeight = window.visualViewport?.height || window.innerHeight;
         const windowHeight = window.innerHeight;
         const keyboardHeight = windowHeight - viewportHeight;
-        setKeyboardHeight(keyboardHeight > 0 ? keyboardHeight : 0);
+        
+        // Improved threshold for iPad - keyboard is usually 300-400px
+        const threshold = window.innerWidth > 768 ? 100 : 50; // Higher threshold for tablets
+        setKeyboardHeight(keyboardHeight > threshold ? keyboardHeight : 0);
       }
     };
 

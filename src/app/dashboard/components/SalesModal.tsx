@@ -22,12 +22,12 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
     const [trackingNumber, setTrackingNumber] = useState("");
     
     const keyboardHeight = useKeyboardHeight();
-    const isMobile = typeof window !== 'undefined' && 
-      (window.innerWidth <= 768 || /iPad|iPhone|iPod/.test(navigator.userAgent));
+    const isMobileOrTablet = typeof window !== 'undefined' && 
+      (window.innerWidth <= 1024 || /iPad|iPhone|iPod|Android/i.test(navigator.userAgent));
 
-    // Body scroll lock when modal is open on mobile
+    // Body scroll lock when modal is open on mobile/tablet
     useEffect(() => {
-        if (isOpen && isMobile) {
+        if (isOpen && isMobileOrTablet) {
             document.body.classList.add('modal-open');
         } else {
             document.body.classList.remove('modal-open');
@@ -36,7 +36,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
         return () => {
             document.body.classList.remove('modal-open');
         };
-    }, [isOpen, isMobile]);
+    }, [isOpen, isMobileOrTablet]);
 
     // Debounce search input
     useEffect(() => {
@@ -61,10 +61,6 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
     const products = selectedBasket ? selectedBasket.products || [] : [];
     const nextStep = () => setStep((s) => Math.min(s + 1, 2));
     const prevStep = () => setStep((s) => Math.max(s - 1, 0));
-
-    const handleQuickSet = (productId: string, value: number) => {
-        setProductCounts(c => ({ ...c, [productId]: value }));
-    };
 
     const handleSaveSale = async () => {
         if (!selectedBasket) return;
@@ -104,8 +100,8 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
     };
 
     // Calculate modal position and style based on keyboard
-    const modalPlacement = isMobile && keyboardHeight > 0 ? "top" : "center";
-    const modalStyle = isMobile && keyboardHeight > 0 ? {
+    const modalPlacement = isMobileOrTablet && keyboardHeight > 0 ? "top" : "center";
+    const modalStyle = isMobileOrTablet && keyboardHeight > 0 ? {
         marginTop: '10px',
         marginBottom: `${keyboardHeight + 10}px`
     } : {};
@@ -120,7 +116,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
             placement={modalPlacement}
             style={modalStyle}
             classNames={{
-                base: isMobile && keyboardHeight > 0 ? "max-h-screen overflow-y-auto" : ""
+                base: isMobileOrTablet && keyboardHeight > 0 ? "max-h-screen overflow-y-auto" : ""
             }}
         >
             <ModalContent>
@@ -203,11 +199,6 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                                         className="w-16 text-center flex justify-center"
                                                         size="sm"
                                                     />
-                                                    <div className="absolute top-full left-0 mt-1 flex gap-1 bg-white border rounded-lg shadow-lg p-2 z-50">
-                                                        <Button size="sm" onPress={() => handleQuickSet(p.id, 10)} className="text-xs px-2 py-1">10</Button>
-                                                        <Button size="sm" onPress={() => handleQuickSet(p.id, 20)} className="text-xs px-2 py-1">20</Button>
-                                                        <Button size="sm" onPress={() => handleQuickSet(p.id, 30)} className="text-xs px-2 py-1">30</Button>
-                                                    </div>
                                                 </div>
                                                 <Button size="sm" onPress={() => setProductCounts(c => ({ ...c, [p.id]: (c[p.id] || 0) + 1 }))}>+</Button>
                                             </div>

@@ -18,12 +18,12 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
     const [quantity, setQuantity] = useState(0);
     
     const keyboardHeight = useKeyboardHeight();
-    const isMobile = typeof window !== 'undefined' && 
-      (window.innerWidth <= 768 || /iPad|iPhone|iPod/.test(navigator.userAgent));
+    const isMobileOrTablet = typeof window !== 'undefined' && 
+      (window.innerWidth <= 1024 || /iPad|iPhone|iPod|Android/i.test(navigator.userAgent));
 
-    // Body scroll lock when modal is open on mobile
+    // Body scroll lock when modal is open on mobile/tablet
     useEffect(() => {
-        if (isOpen && isMobile) {
+        if (isOpen && isMobileOrTablet) {
             document.body.classList.add('modal-open');
         } else {
             document.body.classList.remove('modal-open');
@@ -32,7 +32,7 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
         return () => {
             document.body.classList.remove('modal-open');
         };
-    }, [isOpen, isMobile]);
+    }, [isOpen, isMobileOrTablet]);
 
     const handleCloseModal = () => {
         setStep(0);
@@ -66,8 +66,8 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
     const prevStep = () => setStep(0);
 
     // Calculate modal position and style based on keyboard
-    const modalPlacement = isMobile && keyboardHeight > 0 ? "top" : "center";
-    const modalStyle = isMobile && keyboardHeight > 0 ? {
+    const modalPlacement = isMobileOrTablet && keyboardHeight > 0 ? "top" : "center";
+    const modalStyle = isMobileOrTablet && keyboardHeight > 0 ? {
         marginTop: '10px',
         marginBottom: `${keyboardHeight + 10}px`
     } : {};
@@ -81,7 +81,7 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
             placement={modalPlacement}
             style={modalStyle}
             classNames={{
-                base: isMobile && keyboardHeight > 0 ? "max-h-screen overflow-y-auto" : ""
+                base: isMobileOrTablet && keyboardHeight > 0 ? "max-h-screen overflow-y-auto" : ""
             }}
         >
             <ModalContent>
