@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
-import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Card } from "@heroui/react";
+import { useState, useEffect } from "react";
+import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Card, Input } from "@heroui/react";
 import { updateProductInBasket } from "../../../services/baskets";
-import MobileOptimizedInput from "../../../components/MobileOptimizedInput";
+import { useKeyboardHeight } from "../../../hooks/useKeyboardHeight";
 
 interface StockModalProps {
     isOpen: boolean;
@@ -16,6 +16,23 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
     const [step, setStep] = useState(0);
     const [action, setAction] = useState<'add' | 'remove' | null>(null);
     const [quantity, setQuantity] = useState(0);
+    
+    const keyboardHeight = useKeyboardHeight();
+    const isMobile = typeof window !== 'undefined' && 
+      (window.innerWidth <= 768 || /iPad|iPhone|iPod/.test(navigator.userAgent));
+
+    // Body scroll lock when modal is open on mobile
+    useEffect(() => {
+        if (isOpen && isMobile) {
+            document.body.classList.add('modal-open');
+        } else {
+            document.body.classList.remove('modal-open');
+        }
+        
+        return () => {
+            document.body.classList.remove('modal-open');
+        };
+    }, [isOpen, isMobile]);
 
     const handleCloseModal = () => {
         setStep(0);
@@ -48,8 +65,25 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
 
     const prevStep = () => setStep(0);
 
+    // Calculate modal position and style based on keyboard
+    const modalPlacement = isMobile && keyboardHeight > 0 ? "top" : "center";
+    const modalStyle = isMobile && keyboardHeight > 0 ? {
+        marginTop: '10px',
+        marginBottom: `${keyboardHeight + 10}px`
+    } : {};
+
     return (
-        <Modal isOpen={isOpen} onClose={handleCloseModal} size="md" isDismissable={true}>
+        <Modal 
+            isOpen={isOpen} 
+            onClose={handleCloseModal} 
+            size="md" 
+            isDismissable={true}
+            placement={modalPlacement}
+            style={modalStyle}
+            classNames={{
+                base: isMobile && keyboardHeight > 0 ? "max-h-screen overflow-y-auto" : ""
+            }}
+        >
             <ModalContent>
                 <ModalHeader className="flex flex-col items-center justify-center text-center">
                     <h3 className="text-lg font-semibold mb-4">Stock Management</h3>
@@ -128,11 +162,11 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
                                     >
                                         -
                                     </Button>
-                                    <MobileOptimizedInput
+                                    <Input
                                         type="number"
                                         label="Quantity"
                                         value={quantity.toString()}
-                                        onChange={(value) => setQuantity(Math.max(0, Number(value)))}
+                                        onChange={(e) => setQuantity(Math.max(0, Number(e.target.value)))}
                                         className="w-24 text-center"
                                         placeholder="0"
                                         size="sm"

@@ -68,21 +68,33 @@ body {
 
 /* Prevent mobile keyboard and zoom for readonly inputs */
 @media (max-width: 768px) {
-  input[readonly] {
-    pointer-events: auto !important;
-    -webkit-user-select: none !important;
-    -moz-user-select: none !important;
-    -ms-user-select: none !important;
-    user-select: none !important;
-    font-size: 16px !important; /* Prevents zoom */
-    caret-color: transparent !important;
+  /* Prevent body scroll when modal is open on mobile */
+  body.modal-open {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
   }
   
-  input[readonly]:focus {
-    outline: none !important;
-    -webkit-tap-highlight-color: transparent !important;
+  /* Enhanced mobile input handling */
+  input[type="text"], 
+  input[type="number"], 
+  input[type="email"], 
+  input[type="password"] {
+    font-size: 16px !important; /* Prevents zoom on focus */
   }
-
+  
+  /* Modal keyboard avoidance */
+  .modal-keyboard-avoid {
+    position: fixed !important;
+    max-height: calc(100vh - 20px) !important;
+    overflow-y: auto !important;
+  }
+  
+  /* Smoother transitions for mobile */
+  [data-slot="base"] {
+    transition: all 0.3s ease !important;
+  }
+  
   /* Prevent backdrop clicks on mobile floating input modal */
   .floating-input-modal [data-slot="backdrop"] {
     pointer-events: none !important;

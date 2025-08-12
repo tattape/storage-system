@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter } from "@heroui/react";
+import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Input } from "@heroui/react";
 import { updateProductInBasket } from "../../../services/baskets";
-import MobileOptimizedInput from "../../../components/MobileOptimizedInput";
+import { useKeyboardHeight } from "../../../hooks/useKeyboardHeight";
 
 interface EditProductModalProps {
     isOpen: boolean;
@@ -20,6 +20,10 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
         packSize: 1 
     });
 
+    const keyboardHeight = useKeyboardHeight();
+    const isMobile = typeof window !== 'undefined' && 
+      (window.innerWidth <= 768 || /iPad|iPhone|iPod/.test(navigator.userAgent));
+
     useEffect(() => {
         if (product && isOpen) {
             setProductForm({
@@ -30,6 +34,19 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
             });
         }
     }, [product, isOpen]);
+
+    // Body scroll lock when modal is open on mobile
+    useEffect(() => {
+        if (isOpen && isMobile) {
+            document.body.classList.add('modal-open');
+        } else {
+            document.body.classList.remove('modal-open');
+        }
+        
+        return () => {
+            document.body.classList.remove('modal-open');
+        };
+    }, [isOpen, isMobile]);
 
     const handleCloseModal = () => {
         setProductForm({ name: "", minStock: 0, price: 0, packSize: 1 });
@@ -54,36 +71,64 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
         }
     };
 
+    // Calculate modal position and style based on keyboard
+    const modalPlacement = isMobile && keyboardHeight > 0 ? "top" : "center";
+    const modalStyle = isMobile && keyboardHeight > 0 ? {
+        marginTop: '10px',
+        marginBottom: `${keyboardHeight + 10}px`
+    } : {};
+
     return (
-        <Modal isOpen={isOpen} onClose={handleCloseModal} size="md">
+        <Modal 
+            isOpen={isOpen} 
+            onClose={handleCloseModal} 
+            size="md"
+            placement={modalPlacement}
+            style={modalStyle}
+            classNames={{
+                base: isMobile && keyboardHeight > 0 ? "max-h-screen overflow-y-auto" : ""
+            }}
+        >
             <ModalContent>
                 <ModalHeader>Edit Product</ModalHeader>
                 <ModalBody>
-                    <MobileOptimizedInput 
+                    <Input 
                         label="Product Name" 
                         value={productForm.name || ""} 
-                        onChange={(value) => setProductForm(f => ({ ...f, name: value }))} 
+                        onChange={(e) => setProductForm(f => ({ ...f, name: e.target.value }))} 
+                        classNames={{
+                            inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
+                        }}
                     />
-                    <MobileOptimizedInput 
+                    <Input 
                         label="Min Stock" 
                         type="number" 
                         value={String(productForm.minStock || 0)} 
-                        onChange={(value) => setProductForm(f => ({ ...f, minStock: Number(value) || 0 }))} 
+                        onChange={(e) => setProductForm(f => ({ ...f, minStock: Number(e.target.value) || 0 }))} 
                         className="mt-2" 
+                        classNames={{
+                            inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
+                        }}
                     />
-                    <MobileOptimizedInput 
+                    <Input 
                         label="Price" 
                         type="number" 
                         value={String(productForm.price || 0)} 
-                        onChange={(value) => setProductForm(f => ({ ...f, price: Number(value) || 0 }))} 
+                        onChange={(e) => setProductForm(f => ({ ...f, price: Number(e.target.value) || 0 }))} 
                         className="mt-2" 
+                        classNames={{
+                            inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
+                        }}
                     />
-                    <MobileOptimizedInput 
+                    <Input 
                         label="Pack Size" 
                         type="number" 
                         value={String(productForm.packSize || 1)} 
-                        onChange={(value) => setProductForm(f => ({ ...f, packSize: Number(value) || 1 }))} 
+                        onChange={(e) => setProductForm(f => ({ ...f, packSize: Number(e.target.value) || 1 }))} 
                         className="mt-2" 
+                        classNames={{
+                            inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
+                        }}
                     />
                 </ModalBody>
                 <ModalFooter>

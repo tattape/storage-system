@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Card, Image } from "@heroui/react";
+import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Card, Image, Input } from "@heroui/react";
 import { updateProductInBasket } from "../../../services/baskets";
 import { addSale } from "../../../services/sales";
-import MobileOptimizedInput from "../../../components/MobileOptimizedInput";
+import { useKeyboardHeight } from "../../../hooks/useKeyboardHeight";
 
 interface SalesModalProps {
     isOpen: boolean;
@@ -18,9 +18,25 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
     const [productCounts, setProductCounts] = useState<{ [key: string]: number }>({});
     const [searchTerm, setSearchTerm] = useState("");
     const [searchInput, setSearchInput] = useState("");
-    const [focusedInput, setFocusedInput] = useState<string | null>(null);
     const [customerName, setCustomerName] = useState("");
     const [trackingNumber, setTrackingNumber] = useState("");
+    
+    const keyboardHeight = useKeyboardHeight();
+    const isMobile = typeof window !== 'undefined' && 
+      (window.innerWidth <= 768 || /iPad|iPhone|iPod/.test(navigator.userAgent));
+
+    // Body scroll lock when modal is open on mobile
+    useEffect(() => {
+        if (isOpen && isMobile) {
+            document.body.classList.add('modal-open');
+        } else {
+            document.body.classList.remove('modal-open');
+        }
+        
+        return () => {
+            document.body.classList.remove('modal-open');
+        };
+    }, [isOpen, isMobile]);
 
     // Debounce search input
     useEffect(() => {
@@ -37,7 +53,6 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
         setProductCounts({});
         setSearchTerm("");
         setSearchInput("");
-        setFocusedInput(null);
         setCustomerName("");
         setTrackingNumber("");
         onClose();
@@ -49,7 +64,6 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
 
     const handleQuickSet = (productId: string, value: number) => {
         setProductCounts(c => ({ ...c, [productId]: value }));
-        setFocusedInput(null);
     };
 
     const handleSaveSale = async () => {
@@ -89,8 +103,26 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
         onSaleComplete();
     };
 
+    // Calculate modal position and style based on keyboard
+    const modalPlacement = isMobile && keyboardHeight > 0 ? "top" : "center";
+    const modalStyle = isMobile && keyboardHeight > 0 ? {
+        marginTop: '10px',
+        marginBottom: `${keyboardHeight + 10}px`
+    } : {};
+
     return (
-        <Modal isOpen={isOpen} onClose={handleCloseModal} size="xl" isDismissable={true} hideCloseButton={false}>
+        <Modal 
+            isOpen={isOpen} 
+            onClose={handleCloseModal} 
+            size="xl" 
+            isDismissable={true} 
+            hideCloseButton={false}
+            placement={modalPlacement}
+            style={modalStyle}
+            classNames={{
+                base: isMobile && keyboardHeight > 0 ? "max-h-screen overflow-y-auto" : ""
+            }}
+        >
             <ModalContent>
                 <ModalHeader className="flex flex-col items-center justify-center text-center">
                     <h3 className="text-lg font-semibold mb-4">Sales Process</h3>
@@ -117,13 +149,13 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                         <>
                             {/* Search Input - Fixed at top */}
                             <div className="mb-4 flex-shrink-0">
-                                <MobileOptimizedInput
+                                <Input
                                     placeholder="Search baskets..."
                                     label="Search Baskets"
                                     value={searchInput}
-                                    onChange={(value) => {
-                                        setSearchInput(value);
-                                        setSearchTerm(value);
+                                    onChange={(e) => {
+                                        setSearchInput(e.target.value);
+                                        setSearchTerm(e.target.value);
                                     }}
                                     className="w-full"
                                 />
@@ -163,21 +195,19 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                             <div className="flex items-center gap-2">
                                                 <Button size="sm" onPress={() => setProductCounts(c => ({ ...c, [p.id]: Math.max((c[p.id] || 0) - 1, 0) }))}>-</Button>
                                                 <div className="relative">
-                                                    <MobileOptimizedInput
+                                                    <Input
                                                         type="number"
                                                         label="Quantity"
                                                         value={(productCounts[p.id] || 0).toString()}
-                                                        onChange={(value) => setProductCounts(c => ({ ...c, [p.id]: Math.max(Number(value), 0) }))}
+                                                        onChange={(e) => setProductCounts(c => ({ ...c, [p.id]: Math.max(Number(e.target.value), 0) }))}
                                                         className="w-16 text-center flex justify-center"
                                                         size="sm"
                                                     />
-                                                    {focusedInput === p.id && (
-                                                        <div className="absolute top-full left-0 mt-1 flex gap-1 bg-white border rounded-lg shadow-lg p-2 z-50">
-                                                            <Button size="sm" onPress={() => handleQuickSet(p.id, 10)} className="text-xs px-2 py-1">10</Button>
-                                                            <Button size="sm" onPress={() => handleQuickSet(p.id, 20)} className="text-xs px-2 py-1">20</Button>
-                                                            <Button size="sm" onPress={() => handleQuickSet(p.id, 30)} className="text-xs px-2 py-1">30</Button>
-                                                        </div>
-                                                    )}
+                                                    <div className="absolute top-full left-0 mt-1 flex gap-1 bg-white border rounded-lg shadow-lg p-2 z-50">
+                                                        <Button size="sm" onPress={() => handleQuickSet(p.id, 10)} className="text-xs px-2 py-1">10</Button>
+                                                        <Button size="sm" onPress={() => handleQuickSet(p.id, 20)} className="text-xs px-2 py-1">20</Button>
+                                                        <Button size="sm" onPress={() => handleQuickSet(p.id, 30)} className="text-xs px-2 py-1">30</Button>
+                                                    </div>
                                                 </div>
                                                 <Button size="sm" onPress={() => setProductCounts(c => ({ ...c, [p.id]: (c[p.id] || 0) + 1 }))}>+</Button>
                                             </div>
@@ -193,18 +223,18 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                         <div className="min-h-[300px]">
                             <div className="mb-4 font-semibold text-lg text-center">Customer Information</div>
                             <div className="w-full max-w-md mx-auto space-y-4 mb-6">
-                                <MobileOptimizedInput
+                                <Input
                                     label="Customer Name"
                                     placeholder="Enter customer name"
                                     value={customerName}
-                                    onChange={setCustomerName}
+                                    onChange={(e) => setCustomerName(e.target.value)}
                                     isRequired
                                 />
-                                <MobileOptimizedInput
+                                <Input
                                     label="Tracking Number"
                                     placeholder="Enter tracking number"
                                     value={trackingNumber}
-                                    onChange={setTrackingNumber}
+                                    onChange={(e) => setTrackingNumber(e.target.value)}
                                     isRequired
                                 />
                             </div>

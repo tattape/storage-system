@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
-import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter } from "@heroui/react";
+import { useState, useEffect } from "react";
+import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Input } from "@heroui/react";
 import { addProductToBasket } from "../../../services/baskets";
-import MobileOptimizedInput from "../../../components/MobileOptimizedInput";
+import { useKeyboardHeight } from "../../../hooks/useKeyboardHeight";
 
 interface AddProductModalProps {
     isOpen: boolean;
@@ -18,6 +18,23 @@ export default function AddProductModal({ isOpen, onClose, basketId, onProductAd
     const [minStock, setMinStock] = useState("");
     const [packSize, setPackSize] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    
+    const keyboardHeight = useKeyboardHeight();
+    const isMobile = typeof window !== 'undefined' && 
+      (window.innerWidth <= 768 || /iPad|iPhone|iPod/.test(navigator.userAgent));
+
+    // Body scroll lock when modal is open on mobile
+    useEffect(() => {
+        if (isOpen && isMobile) {
+            document.body.classList.add('modal-open');
+        } else {
+            document.body.classList.remove('modal-open');
+        }
+        
+        return () => {
+            document.body.classList.remove('modal-open');
+        };
+    }, [isOpen, isMobile]);
 
     const handleClose = () => {
         setProductName("");
@@ -74,50 +91,81 @@ export default function AddProductModal({ isOpen, onClose, basketId, onProductAd
         }
     };
 
+    // Calculate modal position and style based on keyboard
+    const modalPlacement = isMobile && keyboardHeight > 0 ? "top" : "center";
+    const modalStyle = isMobile && keyboardHeight > 0 ? {
+        marginTop: '10px',
+        marginBottom: `${keyboardHeight + 10}px`
+    } : {};
+
     return (
-        <Modal isOpen={isOpen} onClose={handleClose} size="md">
+        <Modal 
+            isOpen={isOpen} 
+            onClose={handleClose} 
+            size="md"
+            placement={modalPlacement}
+            style={modalStyle}
+            classNames={{
+                base: isMobile && keyboardHeight > 0 ? "max-h-screen overflow-y-auto" : ""
+            }}
+        >
             <ModalContent>
                 <ModalHeader>Add New Product</ModalHeader>
                 <ModalBody>
                     <div className="flex flex-col gap-4">
-                        <MobileOptimizedInput
+                        <Input
                             label="Product Name"
                             placeholder="Enter product name"
                             value={productName}
-                            onChange={setProductName}
+                            onChange={(e) => setProductName(e.target.value)}
                             isRequired
+                            classNames={{
+                                inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
+                            }}
                         />
-                        <MobileOptimizedInput
+                        <Input
                             label="Price"
                             placeholder="Enter price"
                             type="number"
                             value={price}
-                            onChange={setPrice}
+                            onChange={(e) => setPrice(e.target.value)}
                             isRequired
+                            classNames={{
+                                inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
+                            }}
                         />
-                        <MobileOptimizedInput
+                        <Input
                             label="Stock"
                             placeholder="Enter stock quantity"
                             type="number"
                             value={stock}
-                            onChange={setStock}
+                            onChange={(e) => setStock(e.target.value)}
                             isRequired
+                            classNames={{
+                                inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
+                            }}
                         />
-                        <MobileOptimizedInput
+                        <Input
                             label="Minimum Stock"
                             placeholder="Enter minimum stock level"
                             type="number"
                             value={minStock}
-                            onChange={setMinStock}
+                            onChange={(e) => setMinStock(e.target.value)}
                             isRequired
+                            classNames={{
+                                inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
+                            }}
                         />
-                        <MobileOptimizedInput
+                        <Input
                             label="Pack Size"
                             placeholder="Enter pieces per pack"
                             type="number"
                             value={packSize}
-                            onChange={setPackSize}
+                            onChange={(e) => setPackSize(e.target.value)}
                             isRequired
+                            classNames={{
+                                inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
+                            }}
                         />
                     </div>
                 </ModalBody>
