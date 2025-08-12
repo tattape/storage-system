@@ -1,17 +1,21 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Accordion, AccordionItem, Input } from "@heroui/react";
 import { createBasket, deleteProductFromBasket, updateBasketName, deleteBasket } from "../../../services/baskets";
 import { PencilIcon, TrashIcon, PlusIcon } from "../../../components/icons";
 import StockTable from "./StockTable";
 import EditProductModal from "./EditProductModal";
 import { useAuth } from "../../../hooks/useAuth";
+import { useKeyboardHeight } from "../../../hooks/useKeyboardHeight";
 
 
 
 export default function StockSection({ baskets, refreshBaskets }: { baskets: any[]; refreshBaskets: () => void }) {
     // Authentication hook
     const { isOwner, isEditor, loading: authLoading } = useAuth();
+    
+    // Keyboard height detection
+    const { keyboardHeight, isMobileOrTablet } = useKeyboardHeight();
 
     // All hooks at the top
     const [expanded, setExpanded] = useState<string | null>(null);
@@ -22,6 +26,19 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
     const [editBasketName, setEditBasketName] = useState("");
     const [editingBasket, setEditingBasket] = useState<any>(null);
     const [editProductModalOpen, setEditProductModalOpen] = useState(false);
+
+    // Body scroll lock when modal is open on mobile/tablet
+    useEffect(() => {
+        if (modal && isMobileOrTablet) {
+            document.body.classList.add('modal-open');
+        } else {
+            document.body.classList.remove('modal-open');
+        }
+        
+        return () => {
+            document.body.classList.remove('modal-open');
+        };
+    }, [modal, isMobileOrTablet]);
 
     // Delete basket - only for owners
     const handleDeleteBasket = async (basket: any) => {
@@ -81,6 +98,19 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
         setEditProductModalOpen(true);
     };
     const handleDeleteProduct = async (basket: any, product: any) => { if (!window.confirm(`Delete product "${product.name}"?`)) return; await deleteProductFromBasket(basket.id, product.id); refreshBaskets(); };
+
+    // Calculate modal position and style based on keyboard
+    const isKeyboardOpen = keyboardHeight > 0;
+    const modalPlacement = isMobileOrTablet && isKeyboardOpen ? "top" : "center";
+    
+    // Calculate available space for modal
+    const availableHeight = typeof window !== 'undefined' 
+      ? (isKeyboardOpen ? window.innerHeight - keyboardHeight - 20 : window.innerHeight - 40)
+      : 'auto';
+    
+    const modalClassName = isMobileOrTablet && isKeyboardOpen 
+      ? "modal-keyboard-avoid modal-scrollable" 
+      : (isMobileOrTablet ? "modal-scrollable" : "");
 
     return (
         <div className="mb-8 w-full max-w-3xl mx-auto px-2 sm:px-4">
@@ -150,11 +180,31 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                         }
                     >
                         {/* Modal: Edit Basket Name */}
-                        <Modal isOpen={modal === 'editBasketName'} onClose={() => setModal(null)} size="md">
-                            <ModalContent>
+                        <Modal 
+                            isOpen={modal === 'editBasketName'} 
+                            onClose={() => setModal(null)} 
+                            size="md"
+                            placement={modalPlacement}
+                            classNames={{
+                                base: modalClassName,
+                                wrapper: isMobileOrTablet ? "overflow-hidden" : "",
+                            }}
+                            style={isMobileOrTablet && isKeyboardOpen ? {
+                                maxHeight: `${availableHeight}px`,
+                                marginTop: '10px',
+                            } : {}}
+                        >
+                            <ModalContent className="modal-content-wrapper">
                                 <ModalHeader>Edit Basket Name</ModalHeader>
-                                <ModalBody>
-                                    <Input label="Basket Name" value={editBasketName} onChange={e => setEditBasketName(e.target.value)} autoFocus />
+                                <ModalBody className="modal-body-scrollable">
+                                    <div className="pb-4">
+                                        <Input 
+                                            label="Basket Name" 
+                                            value={editBasketName} 
+                                            onChange={e => setEditBasketName(e.target.value)} 
+                                            autoFocus 
+                                        />
+                                    </div>
                                 </ModalBody>
                                 <ModalFooter>
                                     <Button variant="light" onPress={() => setModal(null)}>Cancel</Button>
@@ -175,11 +225,31 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
             </Accordion>
 
             {/* Modal: Add Basket */}
-            <Modal isOpen={modal === 'basket'} onClose={() => setModal(null)} size="md">
-                <ModalContent>
+            <Modal 
+                isOpen={modal === 'basket'} 
+                onClose={() => setModal(null)} 
+                size="md"
+                placement={modalPlacement}
+                classNames={{
+                    base: modalClassName,
+                    wrapper: isMobileOrTablet ? "overflow-hidden" : "",
+                }}
+                style={isMobileOrTablet && isKeyboardOpen ? {
+                    maxHeight: `${availableHeight}px`,
+                    marginTop: '10px',
+                } : {}}
+            >
+                <ModalContent className="modal-content-wrapper">
                     <ModalHeader>Add New Basket</ModalHeader>
-                    <ModalBody>
-                        <Input label="Basket Name" value={basketName} onChange={e => setBasketName(e.target.value)} autoFocus />
+                    <ModalBody className="modal-body-scrollable">
+                        <div className="pb-4">
+                            <Input 
+                                label="Basket Name" 
+                                value={basketName} 
+                                onChange={e => setBasketName(e.target.value)} 
+                                autoFocus 
+                            />
+                        </div>
                     </ModalBody>
                     <ModalFooter>
                         <Button variant="light" onPress={() => setModal(null)}>Cancel</Button>

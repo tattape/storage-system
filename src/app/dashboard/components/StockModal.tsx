@@ -17,9 +17,7 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
     const [action, setAction] = useState<'add' | 'remove' | null>(null);
     const [quantity, setQuantity] = useState(0);
     
-    const keyboardHeight = useKeyboardHeight();
-    const isMobileOrTablet = typeof window !== 'undefined' && 
-      (window.innerWidth <= 1024 || /iPad|iPhone|iPod|Android/i.test(navigator.userAgent));
+    const { keyboardHeight, isMobileOrTablet } = useKeyboardHeight();
 
     // Body scroll lock when modal is open on mobile/tablet
     useEffect(() => {
@@ -66,11 +64,17 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
     const prevStep = () => setStep(0);
 
     // Calculate modal position and style based on keyboard
-    const modalPlacement = isMobileOrTablet && keyboardHeight > 0 ? "top" : "center";
-    const modalStyle = isMobileOrTablet && keyboardHeight > 0 ? {
-        marginTop: '10px',
-        marginBottom: `${keyboardHeight + 10}px`
-    } : {};
+    const isKeyboardOpen = keyboardHeight > 0;
+    const modalPlacement = isMobileOrTablet && isKeyboardOpen ? "top" : "center";
+    
+    // Calculate available space for modal
+    const availableHeight = typeof window !== 'undefined' 
+      ? (isKeyboardOpen ? window.innerHeight - keyboardHeight - 20 : window.innerHeight - 40)
+      : 'auto';
+    
+    const modalClassName = isMobileOrTablet && isKeyboardOpen 
+      ? "modal-keyboard-avoid modal-scrollable" 
+      : (isMobileOrTablet ? "modal-scrollable" : "");
 
     return (
         <Modal 
@@ -79,12 +83,16 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
             size="md" 
             isDismissable={true}
             placement={modalPlacement}
-            style={modalStyle}
             classNames={{
-                base: isMobileOrTablet && keyboardHeight > 0 ? "max-h-screen overflow-y-auto" : ""
+                base: modalClassName,
+                wrapper: isMobileOrTablet ? "overflow-hidden" : "",
             }}
+            style={isMobileOrTablet && isKeyboardOpen ? {
+                maxHeight: `${availableHeight}px`,
+                marginTop: '10px',
+            } : {}}
         >
-            <ModalContent>
+            <ModalContent className="modal-content-wrapper">
                 <ModalHeader className="flex flex-col items-center justify-center text-center">
                     <h3 className="text-lg font-semibold mb-4">Stock Management</h3>
                     {product && (
@@ -111,7 +119,7 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
                         ))}
                     </div>
                 </ModalHeader>
-                <ModalBody className="px-6 py-4">
+                <ModalBody className="modal-body-scrollable px-6 py-4">
                     {step === 0 && (
                         <div className="space-y-4">
                             <h4 className="text-center font-medium text-lg mb-6">Choose Action</h4>
@@ -154,29 +162,60 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
                             </div>
                             
                             <div className="flex justify-center">
-                                <div className="flex items-center gap-3">
-                                    <Button 
-                                        size="sm" 
-                                        onPress={() => setQuantity(Math.max(0, quantity - 1))}
-                                        isDisabled={quantity <= 0}
-                                    >
-                                        -
-                                    </Button>
-                                    <Input
-                                        type="number"
-                                        label="Quantity"
-                                        value={quantity.toString()}
-                                        onChange={(e) => setQuantity(Math.max(0, Number(e.target.value)))}
-                                        className="w-24 text-center"
-                                        placeholder="0"
-                                        size="sm"
-                                    />
-                                    <Button 
-                                        size="sm" 
-                                        onPress={() => setQuantity(quantity + 1)}
-                                    >
-                                        +
-                                    </Button>
+                                <div className="flex flex-col gap-3">
+                                    {/* Quick set buttons */}
+                                    <div className="flex justify-center gap-2 mb-2">
+                                        <Button 
+                                            size="sm" 
+                                            variant="bordered"
+                                            onPress={() => setQuantity(10)}
+                                            className="px-3"
+                                        >
+                                            10
+                                        </Button>
+                                        <Button 
+                                            size="sm" 
+                                            variant="bordered"
+                                            onPress={() => setQuantity(20)}
+                                            className="px-3"
+                                        >
+                                            20
+                                        </Button>
+                                        <Button 
+                                            size="sm" 
+                                            variant="bordered"
+                                            onPress={() => setQuantity(30)}
+                                            className="px-3"
+                                        >
+                                            30
+                                        </Button>
+                                    </div>
+                                    
+                                    {/* Quantity controls */}
+                                    <div className="flex items-center gap-3">
+                                        <Button 
+                                            size="sm" 
+                                            onPress={() => setQuantity(Math.max(0, quantity - 1))}
+                                            isDisabled={quantity <= 0}
+                                        >
+                                            -
+                                        </Button>
+                                        <Input
+                                            type="number"
+                                            label="Quantity"
+                                            value={quantity.toString()}
+                                            onChange={(e) => setQuantity(Math.max(0, Number(e.target.value)))}
+                                            className="w-24 text-center"
+                                            placeholder="0"
+                                            size="sm"
+                                        />
+                                        <Button 
+                                            size="sm" 
+                                            onPress={() => setQuantity(quantity + 1)}
+                                        >
+                                            +
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
 

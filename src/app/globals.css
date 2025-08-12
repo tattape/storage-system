@@ -84,3 +84,50 @@ body {
     transition: all 0.3s ease !important;
   }
 }
+
+/* iPad and tablet specific optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Prevent body scroll when modal is open on tablet */
+  body.modal-open {
+    overflow: hidden !important;
+    position: fixed !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+  
+  /* iPad modal keyboard avoidance */
+  .modal-keyboard-avoid {
+    position: fixed !important;
+    top: 10px !important;
+    max-height: calc(100vh - 20px) !important;
+    overflow-y: auto !important;
+    transform: none !important;
+  }
+  
+  /* Ensure modal content is scrollable on iPad */
+  .modal-scrollable {
+    max-height: calc(100vh - 40px) !important;
+    overflow-y: auto !important;
+  }
+  
+  /* iPad input optimization */
+  input[type="text"], 
+  input[type="number"], 
+  input[type="email"], 
+  input[type="password"] {
+    font-size: 16px !important; /* Prevents zoom on focus */
+  }
+}
+
+/* Universal modal scrolling improvements */
+.modal-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-height: inherit;
+}
+
+.modal-body-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}

@@ -19,9 +19,7 @@ export default function AddProductModal({ isOpen, onClose, basketId, onProductAd
     const [packSize, setPackSize] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     
-    const keyboardHeight = useKeyboardHeight();
-    const isMobileOrTablet = typeof window !== 'undefined' && 
-      (window.innerWidth <= 1024 || /iPad|iPhone|iPod|Android/i.test(navigator.userAgent));
+    const { keyboardHeight, isMobileOrTablet } = useKeyboardHeight();
 
     // Body scroll lock when modal is open on mobile/tablet
     useEffect(() => {
@@ -92,11 +90,17 @@ export default function AddProductModal({ isOpen, onClose, basketId, onProductAd
     };
 
     // Calculate modal position and style based on keyboard
-    const modalPlacement = isMobileOrTablet && keyboardHeight > 0 ? "top" : "center";
-    const modalStyle = isMobileOrTablet && keyboardHeight > 0 ? {
-        marginTop: '10px',
-        marginBottom: `${keyboardHeight + 10}px`
-    } : {};
+    const isKeyboardOpen = keyboardHeight > 0;
+    const modalPlacement = isMobileOrTablet && isKeyboardOpen ? "top" : "center";
+    
+    // Calculate available space for modal
+    const availableHeight = typeof window !== 'undefined' 
+      ? (isKeyboardOpen ? window.innerHeight - keyboardHeight - 20 : window.innerHeight - 40)
+      : 'auto';
+    
+    const modalClassName = isMobileOrTablet && isKeyboardOpen 
+      ? "modal-keyboard-avoid modal-scrollable" 
+      : (isMobileOrTablet ? "modal-scrollable" : "");
 
     return (
         <Modal 
@@ -104,15 +108,19 @@ export default function AddProductModal({ isOpen, onClose, basketId, onProductAd
             onClose={handleClose} 
             size="md"
             placement={modalPlacement}
-            style={modalStyle}
             classNames={{
-                base: isMobileOrTablet && keyboardHeight > 0 ? "max-h-screen overflow-y-auto" : ""
+                base: modalClassName,
+                wrapper: isMobileOrTablet ? "overflow-hidden" : "",
             }}
+            style={isMobileOrTablet && isKeyboardOpen ? {
+                maxHeight: `${availableHeight}px`,
+                marginTop: '10px',
+            } : {}}
         >
-            <ModalContent>
+            <ModalContent className="modal-content-wrapper">
                 <ModalHeader>Add New Product</ModalHeader>
-                <ModalBody>
-                    <div className="flex flex-col gap-4">
+                <ModalBody className="modal-body-scrollable">
+                    <div className="flex flex-col gap-4 pb-4">
                         <Input
                             label="Product Name"
                             placeholder="Enter product name"

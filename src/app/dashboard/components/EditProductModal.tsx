@@ -20,9 +20,7 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
         packSize: 1 
     });
 
-    const keyboardHeight = useKeyboardHeight();
-    const isMobileOrTablet = typeof window !== 'undefined' && 
-      (window.innerWidth <= 1024 || /iPad|iPhone|iPod|Android/i.test(navigator.userAgent));
+    const { keyboardHeight, isMobileOrTablet } = useKeyboardHeight();
 
     useEffect(() => {
         if (product && isOpen) {
@@ -72,11 +70,17 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
     };
 
     // Calculate modal position and style based on keyboard
-    const modalPlacement = isMobileOrTablet && keyboardHeight > 0 ? "top" : "center";
-    const modalStyle = isMobileOrTablet && keyboardHeight > 0 ? {
-        marginTop: '10px',
-        marginBottom: `${keyboardHeight + 10}px`
-    } : {};
+    const isKeyboardOpen = keyboardHeight > 0;
+    const modalPlacement = isMobileOrTablet && isKeyboardOpen ? "top" : "center";
+    
+    // Calculate available space for modal
+    const availableHeight = typeof window !== 'undefined' 
+      ? (isKeyboardOpen ? window.innerHeight - keyboardHeight - 20 : window.innerHeight - 40)
+      : 'auto';
+    
+    const modalClassName = isMobileOrTablet && isKeyboardOpen 
+      ? "modal-keyboard-avoid modal-scrollable" 
+      : (isMobileOrTablet ? "modal-scrollable" : "");
 
     return (
         <Modal 
@@ -84,52 +88,55 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
             onClose={handleCloseModal} 
             size="md"
             placement={modalPlacement}
-            style={modalStyle}
             classNames={{
-                base: isMobileOrTablet && keyboardHeight > 0 ? "max-h-screen overflow-y-auto" : ""
+                base: modalClassName,
+                wrapper: isMobileOrTablet ? "overflow-hidden" : "",
             }}
+            style={isMobileOrTablet && isKeyboardOpen ? {
+                maxHeight: `${availableHeight}px`,
+                marginTop: '10px',
+            } : {}}
         >
-            <ModalContent>
+            <ModalContent className="modal-content-wrapper">
                 <ModalHeader>Edit Product</ModalHeader>
-                <ModalBody>
-                    <Input 
-                        label="Product Name" 
-                        value={productForm.name || ""} 
-                        onChange={(e) => setProductForm(f => ({ ...f, name: e.target.value }))} 
-                        classNames={{
-                            inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
-                        }}
-                    />
-                    <Input 
-                        label="Min Stock" 
-                        type="number" 
-                        value={String(productForm.minStock || 0)} 
-                        onChange={(e) => setProductForm(f => ({ ...f, minStock: Number(e.target.value) || 0 }))} 
-                        className="mt-2" 
-                        classNames={{
-                            inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
-                        }}
-                    />
-                    <Input 
-                        label="Price" 
-                        type="number" 
-                        value={String(productForm.price || 0)} 
-                        onChange={(e) => setProductForm(f => ({ ...f, price: Number(e.target.value) || 0 }))} 
-                        className="mt-2" 
-                        classNames={{
-                            inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
-                        }}
-                    />
-                    <Input 
-                        label="Pack Size" 
-                        type="number" 
-                        value={String(productForm.packSize || 1)} 
-                        onChange={(e) => setProductForm(f => ({ ...f, packSize: Number(e.target.value) || 1 }))} 
-                        className="mt-2" 
-                        classNames={{
-                            inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
-                        }}
-                    />
+                <ModalBody className="modal-body-scrollable">
+                    <div className="flex flex-col gap-4 pb-4">
+                        <Input 
+                            label="Product Name" 
+                            value={productForm.name || ""} 
+                            onChange={(e) => setProductForm(f => ({ ...f, name: e.target.value }))} 
+                            classNames={{
+                                inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
+                            }}
+                        />
+                        <Input 
+                            label="Min Stock" 
+                            type="number" 
+                            value={String(productForm.minStock || 0)} 
+                            onChange={(e) => setProductForm(f => ({ ...f, minStock: Number(e.target.value) || 0 }))} 
+                            classNames={{
+                                inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
+                            }}
+                        />
+                        <Input 
+                            label="Price" 
+                            type="number" 
+                            value={String(productForm.price || 0)} 
+                            onChange={(e) => setProductForm(f => ({ ...f, price: Number(e.target.value) || 0 }))} 
+                            classNames={{
+                                inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
+                            }}
+                        />
+                        <Input 
+                            label="Pack Size" 
+                            type="number" 
+                            value={String(productForm.packSize || 1)} 
+                            onChange={(e) => setProductForm(f => ({ ...f, packSize: Number(e.target.value) || 1 }))} 
+                            classNames={{
+                                inputWrapper: "bg-white/50 border border-purple-200 hover:border-purple-400"
+                            }}
+                        />
+                    </div>
                 </ModalBody>
                 <ModalFooter>
                     <Button variant="light" onClick={handleCloseModal}>Cancel</Button>
