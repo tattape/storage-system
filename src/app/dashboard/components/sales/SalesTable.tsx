@@ -53,6 +53,13 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
             );
         }
 
+        // Sort by date - newest first
+        filteredSales.sort((a, b) => {
+            const dateA = a.date ? (typeof a.date === 'string' ? new Date(a.date) : a.date) : new Date(0);
+            const dateB = b.date ? (typeof b.date === 'string' ? new Date(b.date) : b.date) : new Date(0);
+            return dateB.getTime() - dateA.getTime(); // Descending order (newest first)
+        });
+
         return filteredSales;
     }, [sales, filterValue, hasSearchFilter]);
 
