@@ -33,17 +33,6 @@
   body {
     transition: padding-bottom 0.3s ease-in-out;
   }
-  
-  /* Fix for modals on mobile */
-  .mobile-modal-fix {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
 }
 
 @theme inline {
@@ -93,15 +82,5 @@ body {
   /* Smoother transitions for mobile */
   [data-slot="base"] {
     transition: all 0.3s ease !important;
-  }
-  
-  /* Prevent backdrop clicks on mobile floating input modal */
-  .floating-input-modal [data-slot="backdrop"] {
-    pointer-events: none !important;
-  }
-  
-  /* Ensure modal content is still clickable */
-  .floating-input-modal [data-slot="base"] {
-    pointer-events: auto !important;
   }
 }
