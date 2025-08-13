@@ -93,20 +93,37 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
 
     const handleDeleteSale = async (sale: any) => {
         if (!window.confirm('Delete this sale?')) return;
-        const basket = baskets.find((b: any) => b.id === sale.basketId);
-        if (!basket) return;
-
-        // Return stock
-        for (const p of sale.products || []) {
-            const prod = (basket.products || []).find((x: any) => x.id === p.productId);
-            if (prod) {
-                const currentStock = prod.stock !== undefined ? prod.stock : 0;
-                await updateProductInBasket(basket.id, p.productId, { stock: currentStock + p.qty });
+        
+        try {
+            const basket = baskets.find((b: any) => b.id === sale.basketId);
+            
+            // ถ้าหาตะกร้าเจอ ให้คืน stock ก่อน
+            if (basket) {
+                // Return stock
+                for (const p of sale.products || []) {
+                    const prod = (basket.products || []).find((x: any) => x.id === p.productId);
+                    if (prod) {
+                        const currentStock = prod.stock !== undefined ? prod.stock : 0;
+                        await updateProductInBasket(basket.id, p.productId, { stock: currentStock + p.qty });
+                    }
+                }
+                console.log('Stock returned to basket successfully');
+            } else {
+                // ถ้าหาตะกร้าไม่เจอ แสดง warning แต่ยังสามารถลบ sale ได้
+                console.warn(`Basket ${sale.basketId} not found, but will proceed to delete sale`);
+                window.alert('Warning: Associated basket not found. Stock cannot be returned, but sale will be deleted.');
             }
+            
+            // ลบ sale ในทุกกรณี (ไม่ว่าจะหาตะกร้าเจอหรือไม่)
+            await deleteSale(sale.id);
+            console.log('Sale deleted successfully');
+            
+            setRowMenu(null);
+            onSaleComplete();
+        } catch (error) {
+            console.error('Error deleting sale:', error);
+            window.alert('Error occurred while deleting sale. Please try again.');
         }
-        await deleteSale(sale.id);
-        setRowMenu(null);
-        onSaleComplete();
     };
 
     const topContent = useMemo(() => {

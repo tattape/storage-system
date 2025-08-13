@@ -15,8 +15,14 @@ export interface Sale {
 }
 
 export async function deleteSale(id: string) {
-  const docRef = doc(db, "sales", id);
-  await deleteDoc(docRef);
+  try {
+    const docRef = doc(db, "sales", id);
+    await deleteDoc(docRef);
+    console.log(`Sale ${id} deleted successfully`);
+  } catch (error) {
+    console.error('Error deleting sale:', error);
+    throw new Error(`Failed to delete sale: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 }
 
 export async function addSale(sale: Omit<Sale, "id">) {

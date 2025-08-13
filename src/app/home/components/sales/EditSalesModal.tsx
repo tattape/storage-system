@@ -50,8 +50,14 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
         setLoading(true);
         try {
             if (!selectedSale) return;
+            
             const basket = baskets.find((b: any) => b.id === selectedSale.basketId);
-            if (!basket) return;
+            
+            // ถ้าหาตะกร้าไม่เจอ ให้แสดง error และไม่ดำเนินการต่อ
+            if (!basket) {
+                window.alert(`Error: Basket ${selectedSale.basketId} not found. Cannot edit this sale.`);
+                return;
+            }
 
             // สร้าง map สำหรับ lookup qty เดิม
             const oldQtyMap: { [key: string]: number } = {};
@@ -91,6 +97,9 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
             setEditProductCounts({});
             onClose();
             onSaleUpdated();
+        } catch (error) {
+            console.error('Error updating sale:', error);
+            window.alert('Error occurred while updating sale. Please try again.');
         } finally {
             setLoading(false);
         }
