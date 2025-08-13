@@ -25,6 +25,7 @@ export async function addSale(sale: Omit<Sale, "id">) {
     date: Timestamp.fromDate(sale.date),
     // products: array of { productId, productName, qty }
   });
+
   return docRef.id;
 }
 

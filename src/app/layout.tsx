@@ -4,6 +4,7 @@ import "./globals.css";
 import { HeroUIProvider } from "@heroui/react";
 import ConditionalNavbar from "../components/ConditionalNavbar";
 import BackgroundProvider from "./BackgroundProvider";
+import ToastNotificationProvider from "../components/ToastNotificationProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,8 +39,10 @@ export default function RootLayout({
       >
         <HeroUIProvider>
           <BackgroundProvider>
-            <ConditionalNavbar />
-            {children}
+            <ToastNotificationProvider>
+              <ConditionalNavbar />
+              {children}
+            </ToastNotificationProvider>
           </BackgroundProvider>
         </HeroUIProvider>
       </body>

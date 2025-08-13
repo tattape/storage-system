@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import SalesTable from "./SalesTable";
 import { DateRangePicker } from "@heroui/react";
 import { parseDate, DateValue } from "@internationalized/date";
@@ -11,9 +11,7 @@ export default function SalesSection({ baskets, refreshBaskets }: { baskets: any
     const today = parseDate(new Date().toISOString().slice(0, 10));
     const [dateRange, setDateRange] = useState<{ start: DateValue; end: DateValue }>({ start: today, end: today });
 
-    useEffect(() => { fetchSales(); }, [dateRange.start, dateRange.end]);
-
-    const calendarDateToJSDate = (value: DateValue | null | undefined, isEnd: boolean = false) => {
+    const calendarDateToJSDate = useCallback((value: DateValue | null | undefined, isEnd: boolean = false) => {
         if (!value) return new Date();
         const d = new Date(value.year, value.month - 1, value.day);
         if (isEnd) {
@@ -22,14 +20,16 @@ export default function SalesSection({ baskets, refreshBaskets }: { baskets: any
             d.setHours(0, 0, 0, 0);
         }
         return d;
-    };
+    }, []);
 
-    const fetchSales = async () => {
+    const fetchSales = useCallback(async () => {
         const jsStartDate = calendarDateToJSDate(dateRange.start, false);
         const jsEndDate = calendarDateToJSDate(dateRange.end, true);
         const data = await getSalesByDateRange(jsStartDate, jsEndDate);
         setSales(data);
-    };
+    }, [dateRange.start, dateRange.end, calendarDateToJSDate]);
+
+    useEffect(() => { fetchSales(); }, [fetchSales]);
 
     const handleSaleComplete = () => {
         fetchSales();

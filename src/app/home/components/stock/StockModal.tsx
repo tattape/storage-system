@@ -58,7 +58,7 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
                 newStock = currentStock - quantity; // Allow negative stock
             }
 
-            await updateProductInBasket(basketId, product.id, { stock: newStock });
+            await updateProductInBasket(basketId, product.id, { stock: newStock }, 'stock_modal');
             handleCloseModal();
             onStockUpdated();
         } finally {

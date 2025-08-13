@@ -73,7 +73,7 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
                 const diff = newQty - oldQty;
                 if (diff !== 0) {
                     const currentStock = p.stock !== undefined ? p.stock : 0;
-                    await updateProductInBasket(basket.id, p.id, { stock: currentStock - diff });
+                    await updateProductInBasket(basket.id, p.id, { stock: currentStock - diff }, 'sales');
                 }
             }
 

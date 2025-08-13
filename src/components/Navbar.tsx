@@ -5,11 +5,14 @@ import { auth } from "../lib/firebase";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import NotificationDropdown from "./NotificationDropdown";
+import { useAuth } from "../hooks/useAuth";
 
 export default function Navbar() {
     const router = useRouter();
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { isOwner } = useAuth();
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -29,6 +32,7 @@ export default function Navbar() {
     const menuItems = [
         { name: "Home", href: "/home" },
         { name: "Dashboard", href: "/dashboard" },
+        ...(isOwner ? [{ name: "Cleanup", href: "/cleanup" }] : []),
     ];
 
     const handleMenuItemClick = (href: string) => {
@@ -81,9 +85,26 @@ export default function Navbar() {
                         Dashboard
                     </Link>
                 </NavbarItem>
+                {isOwner && (
+                    <NavbarItem>
+                        <Link 
+                            href="/cleanup" 
+                            className={`px-4 py-2 rounded-lg transition-all ${
+                                pathname === '/cleanup' 
+                                   ? 'bg-secondary-500/30 text-white font-semibold' 
+                                    : 'text-secondary-500 hover:text-secondary-400 hover:bg-secondary-500/10'
+                            }`}
+                        >
+                            🧹 Cleanup
+                        </Link>
+                    </NavbarItem>
+                )}
             </NavbarContent>
 
             <NavbarContent justify="end">
+                <NavbarItem>
+                    <NotificationDropdown />
+                </NavbarItem>
                 <NavbarItem>
                     <Button color="secondary" className="border border-secondary-300 text-secondary-600 font-bold" variant="bordered" size="sm" onPress={handleLogout}>
                         Logout

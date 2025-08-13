@@ -96,7 +96,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
             for (const p of saleProducts) {
                 const prod = products.find((x: any) => x.id === p.productId);
                 const currentStock = prod?.stock !== undefined ? prod.stock : 0;
-                await updateProductInBasket(basketId, p.productId, { stock: currentStock - p.qty });
+                await updateProductInBasket(basketId, p.productId, { stock: currentStock - p.qty }, 'sales');
             }
 
             handleCloseModal();
