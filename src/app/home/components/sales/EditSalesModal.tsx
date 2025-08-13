@@ -17,7 +17,8 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
     const [editProductCounts, setEditProductCounts] = useState<{ [key: string]: number }>({});
     const [customerName, setCustomerName] = useState<string>("");
     const [trackingNumber, setTrackingNumber] = useState<string>("");
-    
+    const [loading, setLoading] = useState(false);
+
     const { keyboardHeight, isMobileOrTablet } = useKeyboardHeight();
 
     // Body scroll lock when modal is open on mobile/tablet
@@ -46,48 +47,53 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
     }, [selectedSale, isOpen]);
 
     const handleUpdateSale = async () => {
-        if (!selectedSale) return;
-        const basket = baskets.find((b: any) => b.id === selectedSale.basketId);
-        if (!basket) return;
-        
-        const oldProducts = selectedSale.products || [];
-        const newProducts = (basket.products || [])
-            .filter((p: any) => (editProductCounts[p.id] || 0) > 0)
-            .map((p: any) => ({
-                productId: p.id,
-                productName: p.name,
-                qty: editProductCounts[p.id] || 0,
-            }));
+        setLoading(true);
+        try {
+            if (!selectedSale) return;
+            const basket = baskets.find((b: any) => b.id === selectedSale.basketId);
+            if (!basket) return;
 
-        // สร้าง map สำหรับ lookup qty เดิม
-        const oldQtyMap: { [key: string]: number } = {};
-        oldProducts.forEach((p: any) => { oldQtyMap[p.productId] = p.qty; });
+            // สร้าง map สำหรับ lookup qty เดิม
+            const oldQtyMap: { [key: string]: number } = {};
+            (selectedSale.products || []).forEach((p: any) => { oldQtyMap[p.productId] = p.qty; });
 
-        // อัปเดต stock ตามส่วนต่าง
-        for (const p of basket.products || []) {
-            const oldQty = oldQtyMap[p.id] || 0;
-            const newQty = editProductCounts[p.id] || 0;
-            const diff = newQty - oldQty;
-            if (diff !== 0) {
-                const currentStock = p.stock !== undefined ? p.stock : 0;
-                await updateProductInBasket(basket.id, p.id, { stock: currentStock - diff });
+            // สร้าง products ใหม่
+            const newProducts = (basket.products || [])
+                .filter((p: any) => (editProductCounts[p.id] || 0) > 0)
+                .map((p: any) => ({
+                    productId: p.id,
+                    productName: p.name,
+                    qty: editProductCounts[p.id] || 0,
+                }));
+
+            // อัปเดต stock ตามส่วนต่าง
+            for (const p of basket.products || []) {
+                const oldQty = oldQtyMap[p.id] || 0;
+                const newQty = editProductCounts[p.id] || 0;
+                const diff = newQty - oldQty;
+                if (diff !== 0) {
+                    const currentStock = p.stock !== undefined ? p.stock : 0;
+                    await updateProductInBasket(basket.id, p.id, { stock: currentStock - diff });
+                }
             }
-        }
 
-        // ลบ sale เดิม
-        await deleteSale(selectedSale.id);
-        // เพิ่ม sale ใหม่
-        await addSale({
-            date: selectedSale.date,
-            basketId: selectedSale.basketId,
-            products: newProducts,
-            customerName: customerName,
-            trackingNumber: trackingNumber,
-        } as any);
-        
-        setEditProductCounts({});
-        onClose();
-        onSaleUpdated();
+            // ลบ sale เดิม
+            await deleteSale(selectedSale.id);
+            // เพิ่ม sale ใหม่
+            await addSale({
+                date: selectedSale.date,
+                basketId: selectedSale.basketId,
+                products: newProducts,
+                customerName: customerName,
+                trackingNumber: trackingNumber,
+            } as any);
+
+            setEditProductCounts({});
+            onClose();
+            onSaleUpdated();
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleClose = () => {
@@ -258,7 +264,7 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
                 </ModalBody>
                 <ModalFooter>
                     <Button variant="light" onClick={handleClose}>Cancel</Button>
-                    <Button color="primary" onClick={handleUpdateSale}>Save</Button>
+                    <Button color="primary" onClick={handleUpdateSale} isLoading={loading} disabled={loading}>Save</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>

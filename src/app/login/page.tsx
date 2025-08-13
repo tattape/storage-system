@@ -1,5 +1,6 @@
 "use client";
-import { Card, Button, Spinner } from "@heroui/react";
+import { Card, Button } from "@heroui/react";
+import LoadingSpinner from "../../components/LoadingSpinner";
 import { useState, useEffect } from "react";
 import { signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../../lib/firebase";
@@ -21,8 +22,8 @@ export default function LoginPage() {
                 });
 
                 if (response.ok) {
-                    // User has valid session, redirect to dashboard
-                    router.replace("/dashboard");
+                    // User has valid session, redirect to home
+                    router.replace("/home");
                 } else {
                     // No valid session, show login page
                     setChecking(false);
@@ -56,7 +57,7 @@ export default function LoginPage() {
 
                 if (response.ok) {
                     // Redirect after successful session creation
-                    router.push("/dashboard");
+                    router.push("/home");
                 } else {
                     setError("Failed to create session. Please try again.");
                 }
@@ -72,7 +73,7 @@ export default function LoginPage() {
     if (checking) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-secondary-100 to-secondary-300">
-                <Spinner size="lg" color="secondary" />
+                <LoadingSpinner size="lg" color="secondary" />
             </div>
         );
     }
@@ -88,7 +89,7 @@ export default function LoginPage() {
                     className="w-full flex items-center justify-center"
                     disabled={loading}
                 >
-                    {loading ? <Spinner size="sm" color="secondary" className="mr-2" /> : null}
+                    {loading ? <LoadingSpinner size="sm" color="secondary" className="mr-2" /> : null}
                     Login with Google
                 </Button>
                 {error && <div className="text-red-500 mt-4 text-center">{error}</div>}

@@ -1,16 +1,25 @@
 "use client";
 import { Button, Navbar as HeroNavbar, NavbarBrand, NavbarContent, NavbarItem, NavbarMenu, NavbarMenuItem, NavbarMenuToggle } from "@heroui/react";
-import { signOut } from "firebase/auth";
+import { signOut, onAuthStateChanged } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Navbar() {
     const router = useRouter();
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                router.replace("/login");
+            }
+        });
+        return () => unsubscribe();
+    }, [router]);
+
     const handleLogout = async () => {
         await signOut(auth);
         await fetch('/api/session', { method: 'DELETE' });
@@ -18,8 +27,8 @@ export default function Navbar() {
     };
 
     const menuItems = [
+        { name: "Home", href: "/home" },
         { name: "Dashboard", href: "/dashboard" },
-        { name: "Summary", href: "/summary" },
     ];
 
     const handleMenuItemClick = (href: string) => {
@@ -32,7 +41,7 @@ export default function Navbar() {
     };
 
     return (
-        <HeroNavbar 
+        <HeroNavbar
             className="sticky top-0 z-50 bg-white/15 shadow-md backdrop-blur-2xl"
             onMenuOpenChange={setIsMenuOpen}
             isMenuOpen={isMenuOpen}
@@ -40,57 +49,54 @@ export default function Navbar() {
             <NavbarContent>
                 <NavbarMenuToggle
                     aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-                    className="sm:hidden text-secondary-200 dark:text-white"
+                    className="sm:hidden text-secondary-500 dark:text-white"
                 />
                 <NavbarBrand>
-                    <span className="font-bold text-secondary-200 text-xl">Storage System</span>
+                    <span className="font-bold text-secondary-500/60 text-xl">Storage System</span>
                 </NavbarBrand>
             </NavbarContent>
 
             <NavbarContent className="hidden sm:flex gap-4" justify="center">
                 <NavbarItem>
-                    <Link 
-                        href="/dashboard" 
-                        className={`px-4 py-2 rounded-lg transition-all ${
-                            pathname === '/dashboard' 
-                                ? 'bg-white/20 text-white font-semibold' 
-                                : 'text-gray-300 hover:text-white hover:bg-white/10'
-                        }`}
+                    <Link
+                        href="/home"
+                        className={`px-4 py-2 rounded-lg transition-all ${pathname === '/home'
+                            ? 'bg-purple-500/30 text-purple-800 font-semibold'
+                            : 'text-purple-800 hover:text-purple-700 hover:bg-purple-500/10'
+                            }`}
                     >
-                        Dashboard
+                        Home
                     </Link>
                 </NavbarItem>
                 <NavbarItem>
-                    <Link 
-                        href="/summary" 
-                        className={`px-4 py-2 rounded-lg transition-all ${
-                            pathname === '/summary' 
-                                ? 'bg-white/20 text-white font-semibold' 
-                                : 'text-gray-300 hover:text-white hover:bg-white/10'
-                        }`}
+                    <Link
+                        href="/dashboard"
+                        className={`px-4 py-2 rounded-lg transition-all ${pathname === '/dashboard'
+                            ? 'bg-purple-500/30 text-purple-800 font-semibold'
+                            : 'text-purple-800 hover:text-purple-700 hover:bg-purple-500/10'
+                            }`}
                     >
-                        Summary
+                        Dashboard
                     </Link>
                 </NavbarItem>
             </NavbarContent>
 
             <NavbarContent justify="end">
                 <NavbarItem>
-                    <Button color="secondary" className="border border-secondary-300 text-secondary-100" variant="bordered" size="sm" onPress={handleLogout}>
+                    <Button color="secondary" className="border border-secondary-300 text-secondary-600 font-bold" variant="bordered" size="sm" onPress={handleLogout}>
                         Logout
                     </Button>
                 </NavbarItem>
             </NavbarContent>
 
-            <NavbarMenu className="bg-white/20 backdrop-blur-lg border-t border-gray-200 shadow-lg">
+            <NavbarMenu className="bg-black/20 backdrop-blur-lg border-t border-gray-200 shadow-lg">
                 {menuItems.map((item, index) => (
                     <NavbarMenuItem key={`${item.name}-${index}`} className="">
                         <button
-                            className={`w-full text-lg py-3 px-2 block rounded-lg transition-all text-left ${
-                                pathname === item.href 
-                                    ? 'text-secondary-200 font-semibold text-2xl!' 
-                                    : 'text-secondary-100 hover:text-secondary-600 hover:bg-secondary-50'
-                            }`}
+                            className={`w-full text-lg py-3 px-2 block rounded-lg transition-all text-left ${pathname === item.href
+                                ? 'text-secondary-700 font-semibold text-2xl!'
+                                : 'text-secondary-50 hover:text-secondary-600 hover:bg-secondary-50'
+                                }`}
                             onClick={() => handleMenuItemClick(item.href)}
                         >
                             {item.name}

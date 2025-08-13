@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { HeroUIProvider } from "@heroui/react";
 import ConditionalNavbar from "../components/ConditionalNavbar";
+import BackgroundProvider from "./BackgroundProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,8 +37,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <HeroUIProvider>
-          <ConditionalNavbar />
-          {children}
+          <BackgroundProvider>
+            <ConditionalNavbar />
+            {children}
+          </BackgroundProvider>
         </HeroUIProvider>
       </body>
     </html>

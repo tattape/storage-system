@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, Timestamp, doc, deleteDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, Timestamp, doc, deleteDoc, query, where } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
 export interface Sale {
@@ -38,5 +38,23 @@ export async function getAllSales(): Promise<Sale[]> {
       date: data.date?.toDate ? data.date.toDate() : new Date(),
       products: Array.isArray(data.products) ? data.products : [],
     } as Sale;
+  });
+}
+
+export async function getSalesByDateRange(start: Date, end: Date) {
+  const q = query(
+    collection(db, "sales"),
+    where("date", ">=", Timestamp.fromDate(start)),
+    where("date", "<=", Timestamp.fromDate(end))
+  );
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      ...data,
+      date: data.date?.toDate ? data.date.toDate() : new Date(),
+      products: Array.isArray(data.products) ? data.products : [],
+    };
   });
 }

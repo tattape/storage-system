@@ -51,9 +51,11 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
         onClose();
     };
 
+    const [loading, setLoading] = useState(false);
+
     const handleUpdateProduct = async () => {
         if (!product || !basketId) return;
-
+        setLoading(true);
         try {
             await updateProductInBasket(basketId, product.id, {
                 name: String(productForm.name || ""),
@@ -66,6 +68,8 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
         } catch (error) {
             console.error("Error updating product:", error);
             alert("Failed to update product. Please try again.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -141,7 +145,7 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
                 </ModalBody>
                 <ModalFooter>
                     <Button variant="light" onClick={handleCloseModal}>Cancel</Button>
-                    <Button color="primary" onClick={handleUpdateProduct}>Save</Button>
+                    <Button color="primary" onClick={handleUpdateProduct} isLoading={loading} disabled={loading}>Save</Button>
                 </ModalFooter>
             </ModalContent>
         </Modal>

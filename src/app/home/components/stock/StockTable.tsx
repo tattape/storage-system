@@ -115,23 +115,23 @@ export default function StockTable({ products, basketId, basket, onEdit, onDelet
                         onClear={() => onClear()}
                         onValueChange={onSearchChange}
                         classNames={{
-                            input: "placeholder:text-gray-300 group-hover:placeholder:text-gray-400",
+                            input: "placeholder:text-gray-700 group-hover:placeholder:text-gray-800",
                             inputWrapper: "group bg-white/10 backdrop-blur-md border border-white/20"
                         }}
                     />
                     <div className="flex gap-3">
                         <Button color="primary" onPress={onOpen} startContent={<PlusIcon className="w-4 h-4" />}
-                            className="bg-purple-500/80 backdrop-blur-md border border-white/20 text-gray-100 hover:bg-purple-600/80">
+                            className="bg-purple-500/80 backdrop-blur-md border border-white/20 text-white hover:bg-purple-600/80">
                             Product
                         </Button>
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span className="text-gray-300 text-small">Total {filteredItems.length} products</span>
-                    <label className="flex items-center text-gray-300 text-small">
+                    <span className="text-gray-800 text-small font-semibold">Total {filteredItems.length} products</span>
+                    <label className="flex items-center text-gray-800 text-small">
                         Rows per page:
                         <select
-                            className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md outline-none text-gray-200 text-small ml-2 px-2 py-1"
+                            className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md outline-none text-gray-900 text-small ml-2 px-2 py-1"
                             value={rowsPerPage}
                             onChange={(e) => onRowsPerPageChange(e.target.value)}
                         >
@@ -157,12 +157,12 @@ export default function StockTable({ products, basketId, basket, onEdit, onDelet
                 bottomContent={
                     <div className="flex flex-col gap-2">
                         {/* Summary Row */}
-                        <div className="bg-white/10 backdrop-blur-md p-3 rounded-lg border border-white/20">
+                        <div className="bg-white/30 backdrop-blur-md p-3 rounded-lg border border-white/20">
                             <div className="flex justify-between items-center">
-                                <span className="text-sm font-medium text-gray-200">
+                                <span className="text-sm font-medium text-gray-900">
                                     Total Inventory Value ({filteredItems.length} items):
                                 </span>
-                                <span className="text-lg font-bold text-success">
+                                <span className="text-lg font-bold text-success-700">
                                     ฿{grandTotal.toLocaleString()}
                                 </span>
                             </div>
@@ -179,6 +179,11 @@ export default function StockTable({ products, basketId, basket, onEdit, onDelet
                                     page={page}
                                     total={pages}
                                     onChange={(page) => setPage(page)}
+                                    classNames={{
+                                        prev: "bg-white/50 backdrop-blur-md hover:bg-secondary-400 text-secondary-700",
+                                        next: "bg-white/50 backdrop-blur-md hover:bg-secondary-400 text-secondary-700",
+                                        item: "bg-white/50 backdrop-blur-md text-secondary-700",
+                                    }}
                                 />
                             </div>
                         )}
@@ -186,10 +191,10 @@ export default function StockTable({ products, basketId, basket, onEdit, onDelet
                 }
                 bottomContentPlacement="outside"
                 classNames={{
-                    wrapper: "max-h-[350px] overflow-auto bg-white/10 backdrop-blur-md rounded-lg border border-white/20",
+                    wrapper: "max-h-[350px] overflow-auto bg-white/30 backdrop-blur-md rounded-lg border border-white/20",
                     table: "min-h-[200px]",
-                    th: "bg-white/20 backdrop-blur-md text-gray-200 font-semibold border-b border-white/20",
-                    td: "text-gray-200 border-b border-white/10"
+                    th: "bg-white/20 backdrop-blur-md text-gray-900 font-semibold border-b border-white/20",
+                    td: "text-gray-900 border-b border-white/20"
                 }}
             >
                 <TableHeader>
@@ -220,10 +225,10 @@ export default function StockTable({ products, basketId, basket, onEdit, onDelet
                                         stock < 0
                                             ? "text-red-400 font-bold bg-red-900/20 px-2 py-1 rounded"
                                             : stock <= minStock
-                                                ? "text-red-300 font-bold"
+                                                ? "text-red-400 font-bold bg-red-900/20 px-2 py-1 rounded"
                                                 : stock <= (packSize * 2)
-                                                    ? "text-orange-300 font-medium"
-                                                    : "text-gray-200"
+                                                    ? "text-orange-500 font-medium bg-orange-100 px-2 py-1 rounded"
+                                                    : "text-gray-900"
                                     }>
                                         {stock}
                                     </span>

@@ -17,7 +17,7 @@ interface SalesTableProps {
 export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTableProps) {
     // Authentication hook
     const { isOwner } = useAuth();
-    
+
     const [page, setPage] = useState(1);
     const [rowMenu, setRowMenu] = useState<string | null>(null);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -121,23 +121,23 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                         onClear={() => onClear()}
                         onValueChange={onSearchChange}
                         classNames={{
-                            input: "placeholder:text-gray-300 group-hover:placeholder:text-gray-400",
+                            input: "placeholder:text-gray-700 group-hover:placeholder:text-gray-800",
                             inputWrapper: "group bg-white/10 backdrop-blur-md border border-white/20"
                         }}
                     />
                     <div className="flex gap-3">
                         <Button color="primary" onPress={onOpen} startContent={<PlusIcon className="w-4 h-4" />}
-                            className="bg-purple-500/80 backdrop-blur-md border border-white/20 text-gray-100 hover:bg-purple-600/80">
+                            className="bg-purple-500/80 backdrop-blur-md border border-white/20 text-white hover:bg-purple-600/80">
                             Sales
                         </Button>
                     </div>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span className="text-gray-200 text-small">Total {filteredItems.length} sales</span>
-                    <label className="flex items-center text-gray-200 text-small">
+                    <span className="text-gray-800 text-small font-semibold">Total {filteredItems.length} sales</span>
+                    <label className="flex items-center text-gray-800 text-small">
                         Rows per page:
                         <select
-                            className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md outline-none text-gray-100 text-small ml-2 px-2 py-1"
+                            className="bg-white/10 backdrop-blur-md border border-white/20 rounded-md outline-none text-gray-900 text-small ml-2 px-2 py-1"
                             value={rowsPerPage}
                             onChange={(e) => onRowsPerPageChange(e.target.value)}
                         >
@@ -171,6 +171,11 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                                 page={page}
                                 total={pages}
                                 onChange={(page) => setPage(page)}
+                                classNames={{
+                                    prev: "bg-white/50 backdrop-blur-md hover:bg-secondary-400 text-secondary-700",
+                                    next: "bg-white/50 backdrop-blur-md hover:bg-secondary-400 text-secondary-700",
+                                    item: "bg-white/50 backdrop-blur-md text-secondary-700",
+                                }}
                             />
                         </div>
                     ) : null
@@ -179,8 +184,8 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                 classNames={{
                     wrapper: "max-h-[350px] overflow-auto bg-white/10 backdrop-blur-md rounded-lg border border-white/20",
                     table: "min-h-[200px]",
-                    th: "bg-white/20 backdrop-blur-md text-gray-100 font-semibold border-b border-white/20",
-                    td: "text-gray-100 border-b border-white/10"
+                    th: "bg-white/20 backdrop-blur-md text-gray-900 font-semibold border-b border-white/20",
+                    td: "text-gray-900 border-b border-white/10"
                 }}
             >
                 <TableHeader>
@@ -192,7 +197,7 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                     <TableColumn>Qty</TableColumn>
                     <TableColumn>Price</TableColumn>
                 </TableHeader>
-                <TableBody emptyContent={"No sales found"}>
+                <TableBody emptyContent={<span className="text-gray-500">No sales found</span>}>
                     {items.map((s: any) => {
                         const isSelected = rowMenu === s.id;
                         const currentBasket = baskets.find((b: any) => b.id === s.basketId);
@@ -215,7 +220,7 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                                 <TableCell>
                                     <div className="flex flex-col">
                                         <span>{s.customerName || '-'}</span>
-                                        <span className="text-xs text-gray-400 sm:hidden">
+                                        <span className="text-xs text-gray-700 sm:hidden">
                                             {s.date ?
                                                 (typeof s.date === 'string' ?
                                                     s.date :
@@ -232,12 +237,12 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                                         <ul className="list-disc ml-4 mb-2">
                                             {(s.products || []).map((p: any) => (
                                                 <li key={p.productId} className="text-sm">
-                                                    {p.productName} <span className="text-base font-bold text-blue-300">x{p.qty}</span>
+                                                    {p.productName} <span className="text-base font-bold text-secondary-700">x{p.qty}</span>
                                                 </li>
                                             ))}
                                         </ul>
                                         {/* Mobile info */}
-                                        <div className="text-xs text-gray-400 space-y-1 md:hidden">
+                                        <div className="text-xs text-gray-700 space-y-1 md:hidden">
                                             <div>Tracking: {s.trackingNumber || '-'}</div>
                                             <div className="lg:hidden">Basket: {basketName}</div>
                                         </div>
@@ -270,13 +275,13 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                                     )}
                                 </TableCell>
                                 <TableCell>
-                                    <span className="font-semibold text-blue-300 text-sm">
+                                    <span className="font-semibold text-secondary-700 text-sm">
                                         {(s.products || []).reduce((total: number, p: any) => total + (p.qty || 0), 0)}
                                         <span className="hidden sm:inline"> pcs</span>
                                     </span>
                                 </TableCell>
                                 <TableCell>
-                                    <span className="font-semibold text-green-300 text-sm">
+                                    <span className="font-semibold text-green-600 text-sm">
                                         ฿{(s.products || []).reduce((total: number, p: any) => {
                                             const product = currentBasket?.products?.find((bp: any) => bp.id === p.productId);
                                             const price = product?.price || 0;
@@ -306,6 +311,6 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                 baskets={baskets}
                 onSaleUpdated={onSaleComplete}
             />
-        </div>
+        </div >
     );
 }

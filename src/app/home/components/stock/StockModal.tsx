@@ -13,6 +13,7 @@ interface StockModalProps {
 }
 
 export default function StockModal({ isOpen, onClose, basketId, product, onStockUpdated }: StockModalProps) {
+    const [loading, setLoading] = useState(false);
     const [step, setStep] = useState(0);
     const [action, setAction] = useState<'add' | 'remove' | null>(null);
     const [quantity, setQuantity] = useState(0);
@@ -46,19 +47,23 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
 
     const handleSaveStock = async () => {
         if (!product || !action || quantity <= 0) return;
+        setLoading(true);
+        try {
+            const currentStock = Number(product.stock) || 0;
+            let newStock = currentStock;
 
-        const currentStock = Number(product.stock) || 0;
-        let newStock = currentStock;
+            if (action === 'add') {
+                newStock = currentStock + quantity;
+            } else if (action === 'remove') {
+                newStock = currentStock - quantity; // Allow negative stock
+            }
 
-        if (action === 'add') {
-            newStock = currentStock + quantity;
-        } else if (action === 'remove') {
-            newStock = currentStock - quantity; // Allow negative stock
+            await updateProductInBasket(basketId, product.id, { stock: newStock });
+            handleCloseModal();
+            onStockUpdated();
+        } finally {
+            setLoading(false);
         }
-
-        await updateProductInBasket(basketId, product.id, { stock: newStock });
-        handleCloseModal();
-        onStockUpdated();
     };
 
     const prevStep = () => setStep(0);
@@ -176,13 +181,15 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
                                             className="px-3"
                                         >
                                             10
-                                        </Button>
                                         <Button 
-                                            size="sm" 
-                                            variant="bordered"
-                                            onPress={() => setQuantity(20)}
-                                            className="px-3"
+                                            color="primary" 
+                                            onPress={handleSaveStock}
+                                            className="w-full sm:w-auto"
+                                            isLoading={loading}
+                                            disabled={loading}
                                         >
+                                            {action === 'add' ? 'Add Stock' : 'Remove Stock'}
+                                        </Button>
                                             20
                                         </Button>
                                         <Button 

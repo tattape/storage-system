@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Accordion, AccordionItem, Input } from "@heroui/react";
 import { createBasket, deleteProductFromBasket, updateBasketName, deleteBasket } from "../../../../services/baskets";
+import { Timestamp } from "firebase/firestore";
 import { PencilIcon, TrashIcon, PlusIcon } from "../../../../components/icons";
 import StockTable from "./StockTable";
 import EditProductModal from "../shared/EditProductModal";
@@ -9,9 +10,11 @@ import { useAuth } from "../../../../hooks/useAuth";
 import { useKeyboardHeight } from "../../../../hooks/useKeyboardHeight";
 
 export default function StockSection({ baskets, refreshBaskets }: { baskets: any[]; refreshBaskets: () => void }) {
+    const [loadingSaveBasket, setLoadingSaveBasket] = useState(false);
+    const [loadingUpdateBasketName, setLoadingUpdateBasketName] = useState(false);
     // Authentication hook
     const { isOwner, isEditor, loading: authLoading } = useAuth();
-    
+
     // Keyboard height detection
     const { keyboardHeight, isMobileOrTablet } = useKeyboardHeight();
 
@@ -24,6 +27,31 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
     const [editBasketName, setEditBasketName] = useState("");
     const [editingBasket, setEditingBasket] = useState<any>(null);
     const [editProductModalOpen, setEditProductModalOpen] = useState(false);
+    const [basketSearch, setBasketSearch] = useState("");
+    const [debouncedBasketSearch, setDebouncedBasketSearch] = useState("");
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedBasketSearch(basketSearch);
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [basketSearch]);
+
+    // Sort baskets by createdAt (newest first)
+    const sortedBaskets = Array.isArray(baskets)
+        ? [...baskets].sort((a, b) => {
+            if (!a.createdAt || !b.createdAt) return 0;
+            // Firestore Timestamp: use .toMillis() for comparison
+            const aTime = typeof a.createdAt.toMillis === 'function' ? a.createdAt.toMillis() : new Date(a.createdAt).getTime();
+            const bTime = typeof b.createdAt.toMillis === 'function' ? b.createdAt.toMillis() : new Date(b.createdAt).getTime();
+            return bTime - aTime;
+        })
+        : [];
+
+    // Filter baskets by search
+    const filteredBaskets = sortedBaskets.filter(b =>
+        b.name?.toLowerCase().includes(debouncedBasketSearch.toLowerCase())
+    );
 
     // Body scroll lock when modal is open on mobile/tablet
     useEffect(() => {
@@ -32,7 +60,7 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
         } else {
             document.body.classList.remove('modal-open');
         }
-        
+
         return () => {
             document.body.classList.remove('modal-open');
         };
@@ -65,11 +93,13 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
     };
     const handleUpdateBasketName = async () => {
         if (!editingBasket || !editBasketName.trim()) return;
+        setLoadingUpdateBasketName(true);
         await updateBasketName(editingBasket.id, editBasketName.trim());
         setModal(null);
         setEditingBasket(null);
         setEditBasketName("");
         refreshBaskets();
+        setLoadingUpdateBasketName(false);
     };
     const handleAddBasket = async () => {
         if (!isOwner && !isEditor) {
@@ -82,12 +112,18 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
 
     const handleSaveBasket = async () => {
         if (!basketName.trim()) return;
+        setLoadingSaveBasket(true);
         try {
-            await createBasket(basketName.trim());
+            await createBasket({
+                name: basketName.trim(),
+                createdAt: Timestamp.now()
+            });
             setModal(null);
             refreshBaskets();
         } catch {
             alert("Failed to create basket. Please try again.");
+        } finally {
+            setLoadingSaveBasket(false);
         }
     };
     const handleEditProduct = (basket: any, product: any) => {
@@ -100,25 +136,39 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
     // Calculate modal position and style based on keyboard
     const isKeyboardOpen = keyboardHeight > 0;
     const modalPlacement = isMobileOrTablet && isKeyboardOpen ? "top" : "center";
-    
+
     // Calculate available space for modal
-    const availableHeight = typeof window !== 'undefined' 
-      ? (isKeyboardOpen ? window.innerHeight - keyboardHeight - 20 : window.innerHeight - 40)
-      : 'auto';
-    
-    const modalClassName = isMobileOrTablet && isKeyboardOpen 
-      ? "modal-keyboard-avoid modal-scrollable" 
-      : (isMobileOrTablet ? "modal-scrollable" : "");
+    const availableHeight = typeof window !== 'undefined'
+        ? (isKeyboardOpen ? window.innerHeight - keyboardHeight - 20 : window.innerHeight - 40)
+        : 'auto';
+
+    const modalClassName = isMobileOrTablet && isKeyboardOpen
+        ? "modal-keyboard-avoid modal-scrollable"
+        : (isMobileOrTablet ? "modal-scrollable" : "");
 
     return (
         <div className="mb-8 w-full max-w-3xl mx-auto px-2 sm:px-4">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-100">Stock Overview</h2>
-            <div className="flex gap-2 items-center justify-end my-2">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900">Stock Overview</h2>
+            <div className="flex gap-2 items-center justify-end md:justify-between my-2">
+                <div className="flex gap-2 items-center">
+                    <Input
+                        isClearable
+                        placeholder="Search basket..."
+                        value={basketSearch}
+                        onChange={e => setBasketSearch(e.target.value)}
+                        onClear={() => setBasketSearch("")}
+                        className="max-w-xs"
+                        classNames={{
+                            input: "placeholder:text-gray-700 group-hover:placeholder:text-gray-800",
+                            inputWrapper: "group bg-white/30 backdrop-blur-md border border-white/20"
+                        }}
+                    />
+                </div>
                 {(isOwner || isEditor) && (
                     <Button
                         color="primary"
                         onPress={handleAddBasket}
-                        className="w-full sm:w-auto bg-purple-500/80 backdrop-blur-md border border-white/20 text-gray-100 hover:bg-purple-600/80"
+                        className="w-xs sm:w-auto bg-purple-500/80 backdrop-blur-md border border-white/20 text-gray-100 hover:bg-purple-600/80"
                         startContent={<PlusIcon className="w-4 h-4" />}
                         disabled={authLoading}
                     >
@@ -134,15 +184,15 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                     base: "backdrop-blur-md border border-white/20 rounded-lg px-4",
                     title: "text-gray-100 font-semibold",
                     trigger: "backdrop-blur-md hover:bg-white/10",
-                    content: "backdrop-blur-md border-t border-white/20"
+                    content: "backdrop-blur-md border-t border-black/20"
                 }}
             >
-                {baskets.map((b: any) => (
+                {filteredBaskets.map((b: any) => (
                     <AccordionItem
                         key={b.id}
                         title={
                             <div className="flex items-center gap-2">
-                                <span className="text-lg font-bold text-gray-100">{b.name}</span>
+                                <span className="text-lg font-bold text-gray-900">{b.name}</span>
                                 {expanded === b.id && (
                                     <div className="flex items-center gap-1">
                                         <span
@@ -178,9 +228,9 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                         }
                     >
                         {/* Modal: Edit Basket Name */}
-                        <Modal 
-                            isOpen={modal === 'editBasketName'} 
-                            onClose={() => setModal(null)} 
+                        <Modal
+                            isOpen={modal === 'editBasketName'}
+                            onClose={() => setModal(null)}
                             size="md"
                             placement={modalPlacement}
                             classNames={{
@@ -196,17 +246,17 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                                 <ModalHeader>Edit Basket Name</ModalHeader>
                                 <ModalBody className="modal-body-scrollable">
                                     <div className="pb-4">
-                                        <Input 
-                                            label="Basket Name" 
-                                            value={editBasketName} 
-                                            onChange={e => setEditBasketName(e.target.value)} 
-                                            autoFocus 
+                                        <Input
+                                            label="Basket Name"
+                                            value={editBasketName}
+                                            onChange={e => setEditBasketName(e.target.value)}
+                                            autoFocus
                                         />
                                     </div>
                                 </ModalBody>
                                 <ModalFooter>
                                     <Button variant="light" onPress={() => setModal(null)}>Cancel</Button>
-                                    <Button color="primary" onPress={handleUpdateBasketName}>Save</Button>
+                                    <Button color="primary" onPress={handleUpdateBasketName} isLoading={loadingUpdateBasketName} disabled={loadingUpdateBasketName}>Save</Button>
                                 </ModalFooter>
                             </ModalContent>
                         </Modal>
@@ -223,9 +273,9 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
             </Accordion>
 
             {/* Modal: Add Basket */}
-            <Modal 
-                isOpen={modal === 'basket'} 
-                onClose={() => setModal(null)} 
+            <Modal
+                isOpen={modal === 'basket'}
+                onClose={() => setModal(null)}
                 size="md"
                 isDismissable={false}
                 placement={modalPlacement}
@@ -242,17 +292,17 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                     <ModalHeader>Add New Basket</ModalHeader>
                     <ModalBody className="modal-body-scrollable">
                         <div className="pb-4">
-                            <Input 
-                                label="Basket Name" 
-                                value={basketName} 
-                                onChange={e => setBasketName(e.target.value)} 
-                                autoFocus 
+                            <Input
+                                label="Basket Name"
+                                value={basketName}
+                                onChange={e => setBasketName(e.target.value)}
+                                autoFocus
                             />
                         </div>
                     </ModalBody>
                     <ModalFooter>
                         <Button variant="light" onPress={() => setModal(null)}>Cancel</Button>
-                        <Button color="primary" onPress={handleSaveBasket}>Save</Button>
+                        <Button color="primary" onPress={handleSaveBasket} isLoading={loadingSaveBasket} disabled={loadingSaveBasket}>Save</Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>

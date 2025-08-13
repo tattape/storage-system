@@ -20,7 +20,8 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
     const [searchInput, setSearchInput] = useState("");
     const [customerName, setCustomerName] = useState("");
     const [trackingNumber, setTrackingNumber] = useState("");
-    
+    const [loading, setLoading] = useState(false);
+
     const { keyboardHeight, isMobileOrTablet } = useKeyboardHeight();
 
     // Body scroll lock when modal is open on mobile/tablet
@@ -60,42 +61,49 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
     const nextStep = () => setStep((s) => Math.min(s + 1, 2));
     const prevStep = () => setStep((s) => Math.max(s - 1, 0));
 
+    // ...existing code...
+
     const handleSaveSale = async () => {
-        if (!selectedBasket) return;
-        const basketId = selectedBasket.id;
-        const products = selectedBasket.products || [];
-        const saleProducts = products
-            .filter((p: any) => (productCounts[p.id] || 0) > 0)
-            .map((p: any) => ({
-                productId: p.id,
-                productName: p.name,
-                qty: productCounts[p.id] || 0,
-            }));
+        setLoading(true);
+        try {
+            if (!selectedBasket) return;
+            const basketId = selectedBasket.id;
+            const products = selectedBasket.products || [];
+            const saleProducts = products
+                .filter((p: any) => (productCounts[p.id] || 0) > 0)
+                .map((p: any) => ({
+                    productId: p.id,
+                    productName: p.name,
+                    qty: productCounts[p.id] || 0,
+                }));
 
-        if (saleProducts.length === 0) return;
+            if (saleProducts.length === 0) return;
 
-        if (!customerName.trim() || !trackingNumber.trim()) {
-            alert("Please enter customer name and tracking number");
-            return;
+            if (!customerName.trim() || !trackingNumber.trim()) {
+                alert("Please enter customer name and tracking number");
+                return;
+            }
+
+            await addSale({
+                date: new Date(),
+                basketId,
+                products: saleProducts,
+                customerName: customerName.trim(),
+                trackingNumber: trackingNumber.trim(),
+            } as any);
+
+            // Update stock for each product
+            for (const p of saleProducts) {
+                const prod = products.find((x: any) => x.id === p.productId);
+                const currentStock = prod?.stock !== undefined ? prod.stock : 0;
+                await updateProductInBasket(basketId, p.productId, { stock: currentStock - p.qty });
+            }
+
+            handleCloseModal();
+            onSaleComplete();
+        } finally {
+            setLoading(false);
         }
-
-        await addSale({
-            date: new Date(),
-            basketId,
-            products: saleProducts,
-            customerName: customerName.trim(),
-            trackingNumber: trackingNumber.trim(),
-        } as any);
-
-        // Update stock for each product
-        for (const p of saleProducts) {
-            const prod = products.find((x: any) => x.id === p.productId);
-            const currentStock = prod?.stock !== undefined ? prod.stock : 0;
-            await updateProductInBasket(basketId, p.productId, { stock: currentStock - p.qty });
-        }
-
-        handleCloseModal();
-        onSaleComplete();
     };
 
     // Calculate modal position and style based on keyboard
@@ -313,7 +321,17 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                 <ModalFooter>
                     {step > 0 && <Button variant="light" onPress={prevStep} className="w-full sm:w-auto text-xl md:text-base">Back</Button>}
                     {step > 0 && step < 2 && <Button color="primary" onPress={nextStep} className="w-full sm:w-auto text-xl md:text-base">Next</Button>}
-                    {step === 2 && <Button color="success" onPress={handleSaveSale} className="w-full sm:w-auto text-xl md:text-base">Save</Button>}
+                    {step === 2 && (
+                        <Button
+                            color="success"
+                            onPress={handleSaveSale}
+                            className="w-full sm:w-auto text-xl md:text-base"
+                            isLoading={loading}
+                            disabled={loading}
+                        >
+                            Save
+                        </Button>
+                    )}
                 </ModalFooter>
             </ModalContent>
         </Modal>

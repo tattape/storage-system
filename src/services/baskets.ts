@@ -1,9 +1,13 @@
-import { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, Timestamp } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
 // CREATE basket + empty products
-export async function createBasket(name: string) {
-    const docRef = await addDoc(collection(db, "baskets"), { name, products: [] });
+export async function createBasket(basket: { name: string; createdAt?: any }) {
+    const docRef = await addDoc(collection(db, "baskets"), {
+        ...basket,
+        createdAt: basket.createdAt || Timestamp.now(),
+        products: []
+    });
     return docRef.id;
 }
 
