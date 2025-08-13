@@ -181,15 +181,13 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
                                             className="px-3"
                                         >
                                             10
-                                        <Button 
-                                            color="primary" 
-                                            onPress={handleSaveStock}
-                                            className="w-full sm:w-auto"
-                                            isLoading={loading}
-                                            disabled={loading}
-                                        >
-                                            {action === 'add' ? 'Add Stock' : 'Remove Stock'}
                                         </Button>
+                                        <Button 
+                                            size="sm" 
+                                            variant="bordered"
+                                            onPress={() => setQuantity(20)}
+                                            className="px-3"
+                                        >
                                             20
                                         </Button>
                                         <Button 
@@ -254,8 +252,22 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
                     )}
                 </ModalBody>
                 <ModalFooter>
+                    {step === 0 && (
+                        <Button 
+                            variant="light" 
+                            onPress={handleCloseModal} 
+                            className="w-full sm:w-auto"
+                        >
+                            Cancel
+                        </Button>
+                    )}
                     {step > 0 && (
-                        <Button variant="light" onPress={prevStep} className="w-full sm:w-auto">
+                        <Button 
+                            variant="light" 
+                            onPress={prevStep} 
+                            className="w-full sm:w-auto"
+                            isDisabled={loading}
+                        >
                             Back
                         </Button>
                     )}
@@ -263,10 +275,14 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
                         <Button 
                             color={action === 'add' ? 'success' : 'danger'} 
                             onPress={handleSaveStock}
-                            isDisabled={quantity <= 0}
+                            isDisabled={quantity <= 0 || loading}
+                            isLoading={loading}
                             className="w-full sm:w-auto"
                         >
-                            {action === 'add' ? 'Add Stock' : 'Remove Stock'}
+                            {loading 
+                                ? 'Processing...' 
+                                : action === 'add' ? 'Add Stock' : 'Remove Stock'
+                            }
                         </Button>
                     )}
                 </ModalFooter>

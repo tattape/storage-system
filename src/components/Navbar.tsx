@@ -58,23 +58,25 @@ export default function Navbar() {
 
             <NavbarContent className="hidden sm:flex gap-4" justify="center">
                 <NavbarItem>
-                    <Link
-                        href="/home"
-                        className={`px-4 py-2 rounded-lg transition-all ${pathname === '/home'
-                            ? 'bg-purple-500/30 text-purple-800 font-semibold'
-                            : 'text-purple-800 hover:text-purple-700 hover:bg-purple-500/10'
-                            }`}
+                    <Link 
+                        href="/home" 
+                        className={`px-4 py-2 rounded-lg transition-all ${
+                            pathname === '/home' 
+                                ? 'bg-secondary-500/30 text-white font-semibold' 
+                                : 'text-secondary-500 hover:text-secondary-400 hover:bg-secondary-500/10'
+                        }`}
                     >
                         Home
                     </Link>
                 </NavbarItem>
                 <NavbarItem>
-                    <Link
-                        href="/dashboard"
-                        className={`px-4 py-2 rounded-lg transition-all ${pathname === '/dashboard'
-                            ? 'bg-purple-500/30 text-purple-800 font-semibold'
-                            : 'text-purple-800 hover:text-purple-700 hover:bg-purple-500/10'
-                            }`}
+                    <Link 
+                        href="/dashboard" 
+                        className={`px-4 py-2 rounded-lg transition-all ${
+                            pathname === '/dashboard' 
+                               ? 'bg-secondary-500/30 text-white font-semibold' 
+                                : 'text-secondary-500 hover:text-secondary-400 hover:bg-secondary-500/10'
+                        }`}
                     >
                         Dashboard
                     </Link>
