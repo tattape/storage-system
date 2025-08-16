@@ -3,7 +3,7 @@ import { db } from "../lib/firebase";
 import { createStockUpdateNotification, createLowStockWarning, createCriticalStockAlert } from "./notifications";
 
 // CREATE basket + empty products
-export async function createBasket(basket: { name: string; createdAt?: any }) {
+export async function createBasket(basket: { name: string; sellPrice: number; createdAt?: any }) {
     const docRef = await addDoc(collection(db, "baskets"), {
         ...basket,
         createdAt: basket.createdAt || Timestamp.now(),
@@ -31,6 +31,12 @@ export async function getBasketById(id: string) {
 export async function updateBasketName(id: string, newName: string) {
     const docRef = doc(db, "baskets", id);
     await updateDoc(docRef, { name: newName });
+}
+
+// UPDATE basket info (name and sell price)
+export async function updateBasket(id: string, updates: { name?: string; sellPrice?: number }) {
+    const docRef = doc(db, "baskets", id);
+    await updateDoc(docRef, updates);
 }
 
 // DELETE basket

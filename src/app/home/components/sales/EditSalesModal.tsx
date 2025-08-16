@@ -17,6 +17,7 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
     const [editProductCounts, setEditProductCounts] = useState<{ [key: string]: number }>({});
     const [customerName, setCustomerName] = useState<string>("");
     const [trackingNumber, setTrackingNumber] = useState<string>("");
+    const [orderCount, setOrderCount] = useState<number>(1);
     const [loading, setLoading] = useState(false);
 
     const { keyboardHeight, isMobileOrTablet } = useKeyboardHeight();
@@ -43,6 +44,7 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
             setEditProductCounts(counts);
             setCustomerName(selectedSale.customerName || "");
             setTrackingNumber(selectedSale.trackingNumber || "");
+            setOrderCount(selectedSale.orderCount || 1);
         }
     }, [selectedSale, isOpen]);
 
@@ -63,14 +65,27 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
             const oldQtyMap: { [key: string]: number } = {};
             (selectedSale.products || []).forEach((p: any) => { oldQtyMap[p.productId] = p.qty; });
 
-            // สร้าง products ใหม่
+            // สร้าง products ใหม่ โดยใช้ priceAtSale จาก sale เดิม
             const newProducts = (basket.products || [])
                 .filter((p: any) => (editProductCounts[p.id] || 0) > 0)
-                .map((p: any) => ({
-                    productId: p.id,
-                    productName: p.name,
-                    qty: editProductCounts[p.id] || 0,
-                }));
+                .map((p: any) => {
+                    // หาราคาจาก sale เดิม
+                    const originalProduct = selectedSale.products?.find((sp: any) => sp.productId === p.id);
+                    const priceAtSale = originalProduct?.priceAtSale || p.price || 0;
+                    
+                    return {
+                        productId: p.id,
+                        productName: p.name,
+                        qty: editProductCounts[p.id] || 0,
+                        priceAtSale: priceAtSale, // ใช้ราคาจาก sale เดิม
+                    };
+                });
+
+            // คำนวณข้อมูลใหม่
+            const totalCost = newProducts.reduce((sum: number, p: any) => sum + (p.qty * p.priceAtSale), 0);
+            const basketSellPrice = selectedSale.basketSellPrice || basket.sellPrice || 0;
+            const totalRevenue = basketSellPrice * orderCount * (1 - 0.0856);
+            const profit = totalRevenue - totalCost;
 
             // อัปเดต stock ตามส่วนต่าง
             for (const p of basket.products || []) {
@@ -89,9 +104,15 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
             await addSale({
                 date: selectedSale.date,
                 basketId: selectedSale.basketId,
+                basketName: selectedSale.basketName || basket.name,
+                basketSellPrice,
+                orderCount,
                 products: newProducts,
                 customerName: customerName,
                 trackingNumber: trackingNumber,
+                totalCost,
+                totalRevenue,
+                profit,
             } as any);
 
             setEditProductCounts({});
@@ -109,6 +130,7 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
         setEditProductCounts({});
         setCustomerName("");
         setTrackingNumber("");
+        setOrderCount(1);
         onClose();
     };
 
@@ -164,6 +186,17 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
                                         placeholder="Enter tracking number"
                                         value={trackingNumber}
                                         onChange={(e) => setTrackingNumber(e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <Input
+                                        type="number"
+                                        label="Number of Orders"
+                                        placeholder="Enter number of orders"
+                                        value={orderCount.toString()}
+                                        onChange={(e) => setOrderCount(Math.max(1, Number(e.target.value) || 1))}
+                                        min={1}
+                                        description="How many orders of this basket were sold?"
                                     />
                                 </div>
                                 <div className="p-3 bg-gray-50 rounded-lg">

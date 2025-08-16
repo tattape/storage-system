@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyIdToken } from './src/utils/verifyIdToken';
 
-const PUBLIC_PATHS = ["/login", "/api", "/_next", "/favicon.ico", "/public"];
+const PUBLIC_PATHS = ["/login", "/_next", "/favicon.ico", "/public"];
 const OWNER_ONLY_PATHS = ["/cleanup"];
 
 export async function middleware(req: NextRequest) {

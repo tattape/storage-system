@@ -36,10 +36,38 @@ export default function SalesSection({ baskets, refreshBaskets }: { baskets: any
         refreshBaskets();
     };
 
+    // คำนวณกำไรรวม
+    const totalProfit = sales.reduce((sum, sale) => {
+        // ใช้ profit ที่บันทึกไว้ ถ้าไม่มีให้คำนวณแบบเก่า
+        let profit = sale.profit;
+        
+        if (profit === undefined || profit === null) {
+            // Fallback สำหรับ sale เก่า
+            const totalCost = (sale.products || []).reduce((total: number, p: any) => {
+                const price = p.priceAtSale || 0;
+                return total + ((p.qty || 0) * price);
+            }, 0);
+            
+            const basketSellPrice = sale.basketSellPrice || 0;
+            const orderCount = sale.orderCount || 1;
+            const totalRevenue = basketSellPrice * orderCount * (1 - 0.0856);
+            profit = totalRevenue - totalCost;
+        }
+        
+        return sum + (profit || 0);
+    }, 0);
+
     return (
         <div className="mb-8 w-full max-w-3xl mx-auto px-2 sm:px-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900">Sales History</h2>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">Sales History</h2>
+                    <span className={`text-sm sm:text-base font-semibold px-2 py-1 rounded ${
+                        totalProfit >= 0 ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'
+                    }`}>
+                        Profit: ฿{totalProfit.toLocaleString()}
+                    </span>
+                </div>
                 <div className="flex gap-2 items-center">
                     <DateRangePicker
                         label="Date Range"

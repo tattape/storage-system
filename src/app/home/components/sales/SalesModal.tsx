@@ -20,6 +20,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
     const [searchInput, setSearchInput] = useState("");
     const [customerName, setCustomerName] = useState("");
     const [trackingNumber, setTrackingNumber] = useState("");
+    const [orderCount, setOrderCount] = useState(1);
     const [loading, setLoading] = useState(false);
 
     const { keyboardHeight, isMobileOrTablet } = useKeyboardHeight();
@@ -54,6 +55,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
         setSearchInput("");
         setCustomerName("");
         setTrackingNumber("");
+        setOrderCount(1);
         onClose();
     };
 
@@ -69,12 +71,15 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
             if (!selectedBasket) return;
             const basketId = selectedBasket.id;
             const products = selectedBasket.products || [];
+            
+            // คำนวณราคาและกำไรขณะที่ขาย
             const saleProducts = products
                 .filter((p: any) => (productCounts[p.id] || 0) > 0)
                 .map((p: any) => ({
                     productId: p.id,
                     productName: p.name,
                     qty: productCounts[p.id] || 0,
+                    priceAtSale: p.price || 0, // บันทึกราคาต้นทุนขณะขาย
                 }));
 
             if (saleProducts.length === 0) return;
@@ -84,12 +89,30 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                 return;
             }
 
+            // คำนวณต้นทุนรวม
+            const totalCost = saleProducts.reduce((sum: number, p: any) => sum + (p.qty * p.priceAtSale), 0);
+            
+            // ราคาขายตะกร้า
+            const basketSellPrice = selectedBasket.sellPrice || 0;
+            
+            // รายได้หลังหัก 8.56% * จำนวนออเดอร์
+            const totalRevenue = basketSellPrice * orderCount * (1 - 0.0856);
+            
+            // กำไร
+            const profit = totalRevenue - totalCost;
+
             await addSale({
                 date: new Date(),
                 basketId,
+                basketName: selectedBasket.name,
+                basketSellPrice,
+                orderCount,
                 products: saleProducts,
                 customerName: customerName.trim(),
                 trackingNumber: trackingNumber.trim(),
+                totalCost,
+                totalRevenue,
+                profit,
             } as any);
 
             // Update stock for each product
@@ -295,6 +318,16 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                     value={trackingNumber}
                                     onChange={(e) => setTrackingNumber(e.target.value)}
                                     isRequired
+                                />
+                                <Input
+                                    type="number"
+                                    label="Number of Orders"
+                                    placeholder="Enter number of orders"
+                                    value={orderCount.toString()}
+                                    onChange={(e) => setOrderCount(Math.max(1, Number(e.target.value) || 1))}
+                                    min={1}
+                                    isRequired
+                                    description="How many orders of this basket were sold?"
                                 />
                             </div>
                             <div className="mb-4 font-semibold text-lg text-center">Order Summary</div>

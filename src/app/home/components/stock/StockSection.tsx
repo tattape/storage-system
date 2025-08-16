@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Accordion, AccordionItem, Input } from "@heroui/react";
-import { createBasket, deleteProductFromBasket, updateBasketName, deleteBasket } from "../../../../services/baskets";
+import { createBasket, deleteProductFromBasket, updateBasket, deleteBasket } from "../../../../services/baskets";
 import { Timestamp } from "firebase/firestore";
 import { PencilIcon, TrashIcon, PlusIcon } from "../../../../components/icons";
 import StockTable from "./StockTable";
@@ -24,7 +24,9 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
     const [selectedBasket, setSelectedBasket] = useState<any>(null);
     const [selectedProduct, setSelectedProduct] = useState<any>(null);
     const [basketName, setBasketName] = useState("");
+    const [basketSellPrice, setBasketSellPrice] = useState("");
     const [editBasketName, setEditBasketName] = useState("");
+    const [editBasketSellPrice, setEditBasketSellPrice] = useState("");
     const [editingBasket, setEditingBasket] = useState<any>(null);
     const [editProductModalOpen, setEditProductModalOpen] = useState(false);
     const [basketSearch, setBasketSearch] = useState("");
@@ -89,15 +91,20 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
     const handleEditBasketName = (basket: any) => {
         setEditingBasket(basket);
         setEditBasketName(basket.name);
+        setEditBasketSellPrice(basket.sellPrice?.toString() || "");
         setModal('editBasketName');
     };
     const handleUpdateBasketName = async () => {
         if (!editingBasket || !editBasketName.trim()) return;
         setLoadingUpdateBasketName(true);
-        await updateBasketName(editingBasket.id, editBasketName.trim());
+        await updateBasket(editingBasket.id, { 
+            name: editBasketName.trim(),
+            sellPrice: parseFloat(editBasketSellPrice) || 0
+        });
         setModal(null);
         setEditingBasket(null);
         setEditBasketName("");
+        setEditBasketSellPrice("");
         refreshBaskets();
         setLoadingUpdateBasketName(false);
     };
@@ -107,6 +114,7 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
             return;
         }
         setBasketName("");
+        setBasketSellPrice("");
         setModal('basket');
     };
 
@@ -116,6 +124,7 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
         try {
             await createBasket({
                 name: basketName.trim(),
+                sellPrice: parseFloat(basketSellPrice) || 0,
                 createdAt: Timestamp.now()
             });
             setModal(null);
@@ -191,8 +200,13 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                     <AccordionItem
                         key={b.id}
                         title={
-                            <div className="flex items-center gap-2">
-                                <span className="text-lg font-bold text-gray-900">{b.name}</span>
+                            <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-lg font-bold text-gray-900">{b.name}</span>
+                                    <span className="text-sm text-yellow-800 bg-green-100/30 backdrop-blur-md px-2 py-1 rounded">
+                                        ฿{(b.sellPrice || 0).toLocaleString()}
+                                    </span>
+                                </div>
                                 {expanded === b.id && (
                                     <div className="flex items-center gap-1">
                                         <span
@@ -243,14 +257,22 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                             } : {}}
                         >
                             <ModalContent className="modal-content-wrapper">
-                                <ModalHeader>Edit Basket Name</ModalHeader>
+                                <ModalHeader>Edit Basket</ModalHeader>
                                 <ModalBody className="modal-body-scrollable">
-                                    <div className="pb-4">
+                                    <div className="pb-4 space-y-4">
                                         <Input
                                             label="Basket Name"
                                             value={editBasketName}
                                             onChange={e => setEditBasketName(e.target.value)}
                                             autoFocus
+                                        />
+                                        <Input
+                                            label="Sell Price (฿)"
+                                            type="number"
+                                            value={editBasketSellPrice}
+                                            onChange={e => setEditBasketSellPrice(e.target.value)}
+                                            min="0"
+                                            step="0.01"
                                         />
                                     </div>
                                 </ModalBody>
@@ -291,12 +313,20 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                 <ModalContent className="modal-content-wrapper">
                     <ModalHeader>Add New Basket</ModalHeader>
                     <ModalBody className="modal-body-scrollable">
-                        <div className="pb-4">
+                        <div className="pb-4 space-y-4">
                             <Input
                                 label="Basket Name"
                                 value={basketName}
                                 onChange={e => setBasketName(e.target.value)}
                                 autoFocus
+                            />
+                            <Input
+                                label="Sell Price (฿)"
+                                type="number"
+                                value={basketSellPrice}
+                                onChange={e => setBasketSellPrice(e.target.value)}
+                                min="0"
+                                step="0.01"
                             />
                         </div>
                     </ModalBody>

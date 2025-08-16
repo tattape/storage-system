@@ -5,6 +5,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { Spinner } from '@heroui/react';
 import { getUserByEmail } from '../services/users';
+import { useGlobalErrorHandler } from '../hooks/useGlobalErrorHandler';
 
 interface ClientAuthWrapperProps {
     children: ReactNode;
@@ -15,6 +16,9 @@ export default function ClientAuthWrapper({ children }: ClientAuthWrapperProps) 
     const [authorized, setAuthorized] = useState(false);
     const router = useRouter();
     const pathname = usePathname();
+
+    // Setup global error handler for 401 responses
+    useGlobalErrorHandler();
 
     useEffect(() => {
         // Skip auth check for public routes

@@ -7,12 +7,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migrate-sales-ordercount": "node migrate-sales-ordercount.js"
   },
   "dependencies": {
     "@heroui/react": "^2.8.2",
     "cookie": "^1.0.2",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.2.1",
     "firebase": "^12.1.0",
     "firebase-admin": "^13.4.0",
     "framer-motion": "^12.23.12",

@@ -210,7 +210,10 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                     <TableColumn className="hidden lg:table-cell">Basket</TableColumn>
                     <TableColumn className="min-w-[200px] sm:w-full">Products</TableColumn>
                     <TableColumn>Qty</TableColumn>
-                    <TableColumn>Price</TableColumn>
+                    <TableColumn>Orders</TableColumn>
+                    <TableColumn>Cost</TableColumn>
+                    <TableColumn>Revenue</TableColumn>
+                    <TableColumn>Profit</TableColumn>
                 </TableHeader>
                 <TableBody emptyContent={<span className="text-gray-500">No sales found</span>}>
                     {items.map((s: any) => {
@@ -296,13 +299,63 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                                     </span>
                                 </TableCell>
                                 <TableCell>
-                                    <span className="font-semibold text-green-600 text-sm">
-                                        ฿{(s.products || []).reduce((total: number, p: any) => {
-                                            const product = currentBasket?.products?.find((bp: any) => bp.id === p.productId);
-                                            const price = product?.price || 0;
-                                            return total + ((p.qty || 0) * price);
-                                        }, 0).toLocaleString()}
+                                    <span className="font-semibold text-blue-600 text-sm">
+                                        {s.orderCount || 1}
+                                        <span className="hidden sm:inline"> order{(s.orderCount || 1) > 1 ? 's' : ''}</span>
                                     </span>
+                                </TableCell>
+                                <TableCell>
+                                    <span className="font-semibold text-secondary-700 text-sm">
+                                        ฿{(s.totalCost || (s.products || []).reduce((total: number, p: any) => {
+                                            // Fallback สำหรับ sale เก่าที่ไม่มี priceAtSale
+                                            const price = p.priceAtSale || currentBasket?.products?.find((bp: any) => bp.id === p.productId)?.price || 0;
+                                            return total + ((p.qty || 0) * price);
+                                        }, 0)).toLocaleString()}
+                                    </span>
+                                </TableCell>
+                                <TableCell>
+                                    {(() => {
+                                        // ใช้ totalRevenue ที่บันทึกไว้ ถ้าไม่มีให้คำนวณแบบเก่า
+                                        let revenue = s.totalRevenue;
+                                        
+                                        if (revenue === undefined || revenue === null) {
+                                            // Fallback สำหรับ sale เก่า
+                                            const basketSellPrice = s.basketSellPrice || currentBasket?.sellPrice || 0;
+                                            const orderCount = s.orderCount || 1;
+                                            revenue = basketSellPrice * orderCount * (1 - 0.0856);
+                                        }
+                                        
+                                        return (
+                                            <span className="font-semibold text-secondary-700 text-sm">
+                                                ฿{revenue.toLocaleString()}
+                                            </span>
+                                        );
+                                    })()}
+                                </TableCell>
+                                <TableCell>
+                                    {(() => {
+                                        // ใช้ profit ที่บันทึกไว้ ถ้าไม่มีให้คำนวณแบบเก่า (สำหรับ sale เก่า)
+                                        let profit = s.profit;
+                                        
+                                        if (profit === undefined || profit === null) {
+                                            // Fallback สำหรับ sale เก่า
+                                            const totalCost = (s.products || []).reduce((total: number, p: any) => {
+                                                const price = p.priceAtSale || currentBasket?.products?.find((bp: any) => bp.id === p.productId)?.price || 0;
+                                                return total + ((p.qty || 0) * price);
+                                            }, 0);
+                                            
+                                            const basketSellPrice = s.basketSellPrice || currentBasket?.sellPrice || 0;
+                                            const orderCount = s.orderCount || 1;
+                                            const adjustedSellPrice = basketSellPrice * orderCount * (1 - 0.0856);
+                                            profit = adjustedSellPrice - totalCost;
+                                        }
+                                        
+                                        return (
+                                            <span className={`font-semibold text-sm ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                ฿{profit.toLocaleString()}
+                                            </span>
+                                        );
+                                    })()}
                                 </TableCell>
                             </TableRow>
                         );

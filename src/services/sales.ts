@@ -5,13 +5,20 @@ export interface Sale {
   id?: string;
   date: Date;
   basketId: string;
+  basketName?: string;
+  basketSellPrice?: number; // ราคาขายตะกร้าขณะที่ขาย
+  orderCount?: number; // จำนวนออเดอร์ที่ซื้อ (default: 1)
   customerName?: string;
   trackingNumber?: string;
   products: Array<{
     productId: string;
     productName: string;
     qty: number;
+    priceAtSale: number; // ราคาต้นทุนขณะที่ขาย
   }>;
+  totalCost?: number; // ต้นทุนรวม
+  totalRevenue?: number; // รายได้รวม (basketSellPrice * orderCount * 0.9144)
+  profit?: number; // กำไรขณะที่ขาย
 }
 
 export async function deleteSale(id: string) {
