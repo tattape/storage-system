@@ -1,4 +1,4 @@
-import { doc, getDoc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
+import { doc, setDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
 export interface User {
@@ -28,31 +28,6 @@ export async function getUserByEmail(email: string): Promise<User | null> {
   }
 }
 
-// Get user by UID
-export async function getUserByUid(uid: string): Promise<User | null> {
-  try {
-    const userDoc = await getDoc(doc(db, "users", uid));
-    
-    if (userDoc.exists()) {
-      const docData = userDoc.data();
-      
-      const userData = { 
-        id: userDoc.id, 
-        uid: uid,
-        email: docData.email || "",
-        role: docData.role || "member",
-        ...docData 
-      } as User;
-      
-      return userData;
-    }
-    return null;
-  } catch (error) {
-    console.error("Error getting user by UID:", error);
-    return null;
-  }
-}
-
 // Create or update user
 export async function createOrUpdateUser(userData: User): Promise<void> {
   try {
@@ -67,10 +42,10 @@ export async function createOrUpdateUser(userData: User): Promise<void> {
   }
 }
 
-// Check if user is owner
-export async function isUserOwner(uid: string): Promise<boolean> {
+// Check if user is owner by email
+export async function isUserOwner(email: string): Promise<boolean> {
   try {
-    const user = await getUserByUid(uid);
+    const user = await getUserByEmail(email);
     return user?.role === "owner";
   } catch (error) {
     console.error("Error checking user role:", error);

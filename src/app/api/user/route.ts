@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyIdToken } from '../../../utils/verifyIdToken';
-import { getUserByUid, createOrUpdateUser, User } from '../../../services/users';
+import { getUserByEmail, createOrUpdateUser, User } from '../../../services/users';
 
 // Force dynamic rendering to prevent build-time errors
 export const dynamic = 'force-dynamic';
@@ -15,20 +15,24 @@ export async function GET(request: NextRequest) {
     const token = authHeader.substring(7);
     const decodedToken = await verifyIdToken(token);
     
-    // Get user data from Firestore
-    const user = await getUserByUid(decodedToken.uid);
+    // Just use email to get user data (simple and reliable)
+    if (!decodedToken.email) {
+      return NextResponse.json({ error: 'No email in token' }, { status: 400 });
+    }
+    
+    const user = await getUserByEmail(decodedToken.email);
     
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     return NextResponse.json({
-      uid: user.uid,
+      uid: decodedToken.uid,
       email: user.email,
       role: user.role,
     });
   } catch (error) {
-    console.error('Error verifying token:', error);
+    console.error('Error in /api/user:', error);
     return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
   }
 }

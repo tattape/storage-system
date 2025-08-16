@@ -63,7 +63,7 @@ export function useAuth() {
     const isMember = userRole?.role === "member";
 
     return {
-        user: sessionData,
+        user: userRole, // ใช้ userRole แทน sessionData เพื่อให้มี role
         sessionData,
         userRole,
         loading,

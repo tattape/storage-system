@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { HeroUIProvider } from "@heroui/react";
-import ConditionalNavbar from "../components/ConditionalNavbar";
+import ConditionalNavigation from "../components/ConditionalNavigation";
 import BackgroundProvider from "./BackgroundProvider";
 import ToastNotificationProvider from "../components/ToastNotificationProvider";
+import ClientAuthWrapper from "../components/ClientAuthWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,8 +41,10 @@ export default function RootLayout({
         <HeroUIProvider>
           <BackgroundProvider>
             <ToastNotificationProvider>
-              <ConditionalNavbar />
-              {children}
+              <ClientAuthWrapper>
+                <ConditionalNavigation />
+                {children}
+              </ClientAuthWrapper>
             </ToastNotificationProvider>
           </BackgroundProvider>
         </HeroUIProvider>

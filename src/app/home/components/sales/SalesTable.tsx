@@ -107,7 +107,6 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                         await updateProductInBasket(basket.id, p.productId, { stock: currentStock + p.qty });
                     }
                 }
-                console.log('Stock returned to basket successfully');
             } else {
                 // ถ้าหาตะกร้าไม่เจอ แสดง warning แต่ยังสามารถลบ sale ได้
                 console.warn(`Basket ${sale.basketId} not found, but will proceed to delete sale`);
@@ -116,7 +115,6 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
             
             // ลบ sale ในทุกกรณี (ไม่ว่าจะหาตะกร้าเจอหรือไม่)
             await deleteSale(sale.id);
-            console.log('Sale deleted successfully');
             
             setRowMenu(null);
             onSaleComplete();

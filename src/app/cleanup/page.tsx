@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { Button, Card, CardBody, CardHeader, Divider, Chip } from '@heroui/react';
 import { cleanupOldNotifications, cleanupReadNotifications, getNotificationsStats } from '../../services/notifications';
-import { useAuth } from '../../hooks/useAuth';
 
 interface NotificationStats {
     total: number;
@@ -15,7 +14,6 @@ export default function NotificationCleanup() {
     const [stats, setStats] = useState<NotificationStats | null>(null);
     const [loading, setLoading] = useState(false);
     const [lastCleanup, setLastCleanup] = useState<any>(null);
-    const { user, isOwner, loading: authLoading } = useAuth();
 
     const loadStats = async () => {
         try {
@@ -63,43 +61,6 @@ export default function NotificationCleanup() {
             setLoading(false);
         }
     };
-
-    if (authLoading) {
-        return (
-            <div className="container mx-auto p-4 max-w-4xl">
-                <Card>
-                    <CardBody className="text-center py-12">
-                        <div className="text-lg">Loading...</div>
-                    </CardBody>
-                </Card>
-            </div>
-        );
-    }
-
-    if (!user) {
-        return (
-            <div className="container mx-auto p-4 max-w-4xl">
-                <Card>
-                    <CardBody className="text-center py-12">
-                        <div className="text-lg text-red-600">Please login to access this page.</div>
-                    </CardBody>
-                </Card>
-            </div>
-        );
-    }
-
-    if (!isOwner) {
-        return (
-            <div className="container mx-auto p-4 max-w-4xl">
-                <Card>
-                    <CardBody className="text-center py-12">
-                        <div className="text-lg text-red-600">🚫 Access Denied</div>
-                        <p className="text-gray-600 mt-2">Only owners can access the cleanup page.</p>
-                    </CardBody>
-                </Card>
-            </div>
-        );
-    }
 
     return (
         <div className="container mx-auto p-4 max-w-4xl">

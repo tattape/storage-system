@@ -5,7 +5,7 @@ import { auth } from "../lib/firebase";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import NotificationDropdown from "./NotificationDropdown";
+import NavbarNotificationDropdown from "./NavbarNotificationDropdown";
 import { useAuth } from "../hooks/useAuth";
 
 export default function Navbar() {
@@ -103,7 +103,7 @@ export default function Navbar() {
 
             <NavbarContent justify="end">
                 <NavbarItem>
-                    <NotificationDropdown />
+                    <NavbarNotificationDropdown />
                 </NavbarItem>
                 <NavbarItem>
                     <Button color="secondary" className="border border-secondary-300 text-secondary-600 font-bold" variant="bordered" size="sm" onPress={handleLogout}>

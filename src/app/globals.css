@@ -168,3 +168,50 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
+
+/* Bottom Navigation Styles */
+.bottom-nav-padding {
+  padding-bottom: 80px !important; /* Space for bottom navigation */
+}
+
+/* Responsive navigation visibility */
+@media (min-width: 1025px) {
+  .bottom-nav-padding {
+    padding-bottom: 0 !important; /* No bottom padding on desktop */
+  }
+}
+
+/* Bottom navigation specific styles */
+.bottom-nav-item {
+  transition: all 0.2s ease;
+  min-width: 4rem; /* Ensure consistent width */
+}
+
+.bottom-nav-item:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+  border-radius: 8px;
+  transform: scale(1.02);
+}
+
+.bottom-nav-item:active {
+  transform: scale(0.98);
+}
+
+/* Fix notification dropdown positioning in bottom nav */
+.bottom-nav .notification-dropdown {
+  margin-bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Ensure bottom nav buttons have consistent sizing */
+.bottom-nav-item .min-w-unit-16 {
+  min-width: 4rem !important;
+  max-width: 4rem;
+}
+
+/* Safe area support for iOS devices */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}

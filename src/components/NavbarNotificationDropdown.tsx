@@ -5,7 +5,6 @@ import {
     DropdownMenu, 
     DropdownItem,
     Button,
-    Badge,
     Card,
     CardBody,
     Divider,
@@ -13,13 +12,14 @@ import {
 } from "@heroui/react";
 import { useState } from "react";
 import { useNotifications } from "../hooks/useNotifications";
-import NotificationIcon from "./icons/NotificationIcon";
+import NotificationButton from "./NotificationButton";
 import { Notification } from "../services/notifications";
 import { formatDistanceToNow } from "date-fns";
 
-export default function NotificationDropdown() {
+export default function NavbarNotificationDropdown() {
     const { notifications, unreadCount, loading, markAsRead, markAllAsRead } = useNotifications();
-    const [displayCount, setDisplayCount] = useState(5); // เริ่มต้นแสดง 5 รายการ
+    const [displayCount, setDisplayCount] = useState(5);
+    const [isOpen, setIsOpen] = useState(false);
 
     const handleNotificationClick = async (notification: Notification) => {
         if (!notification.isRead) {
@@ -32,7 +32,6 @@ export default function NotificationDropdown() {
     };
 
     const handleDropdownOpen = () => {
-        // Reset display count when dropdown opens
         setDisplayCount(5);
     };
 
@@ -59,22 +58,18 @@ export default function NotificationDropdown() {
     };
 
     return (
-        <Dropdown placement="bottom-end" onOpenChange={(isOpen) => isOpen && handleDropdownOpen()}>
+        <Dropdown 
+            placement="bottom-end" 
+            isOpen={isOpen}
+            onOpenChange={(open) => {
+                setIsOpen(open);
+                if (open) handleDropdownOpen();
+            }}
+        >
             <DropdownTrigger>
-                <Button
-                    variant="light"
-                    isIconOnly
-                    className="text-secondary-500 hover:text-secondary-600"
-                >
-                    <Badge 
-                        content={unreadCount > 0 ? unreadCount : ''} 
-                        color="danger" 
-                        size="sm"
-                        isInvisible={unreadCount === 0}
-                    >
-                        <NotificationIcon size={20} />
-                    </Badge>
-                </Button>
+                <div className="cursor-pointer text-secondary-500 hover:text-secondary-600 transition-colors">
+                    <NotificationButton iconSize={20} />
+                </div>
             </DropdownTrigger>
             <DropdownMenu 
                 aria-label="Notifications"

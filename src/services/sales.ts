@@ -18,7 +18,6 @@ export async function deleteSale(id: string) {
   try {
     const docRef = doc(db, "sales", id);
     await deleteDoc(docRef);
-    console.log(`Sale ${id} deleted successfully`);
   } catch (error) {
     console.error('Error deleting sale:', error);
     throw new Error(`Failed to delete sale: ${error instanceof Error ? error.message : 'Unknown error'}`);
