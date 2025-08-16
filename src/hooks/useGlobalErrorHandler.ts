@@ -1,38 +1,39 @@
-// Global HTTP interceptor for handling authentication errors
+/**
+ * Global HTTP interceptor for handling authentication errors
+ * Automatically redirects to login when 401 responses are detected from protected APIs
+ */
 "use client";
 
 import { useEffect } from 'react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 
-// Extend Window interface to include our custom fetch property
 declare global {
   interface Window {
     fetch: typeof fetch & { __intercepted?: boolean };
   }
 }
 
-// Track if we're already handling a 401 to prevent multiple redirects
+// Prevent multiple simultaneous 401 handling
 let isHandling401 = false;
 
-// List of API endpoints that should trigger logout on 401
-const protectedApiEndpoints = ['/api/user', '/api/sales'];
+// Protected API endpoints that should trigger logout on 401
+const PROTECTED_API_ENDPOINTS = ['/api/user', '/api/sales'];
 
-// Global error handler for 401 responses
-export function setupGlobalErrorHandler() {
-  // Check if we've already setup the interceptor
+/**
+ * Setup global fetch interceptor to handle 401 responses
+ */
+export function setupGlobalErrorHandler(): void {
   if (window.fetch.__intercepted) {
     return;
   }
 
-  // Store original fetch function
   const originalFetch = window.fetch;
   
-  // Override the global fetch function to intercept responses
   window.fetch = async (...args) => {
     const response = await originalFetch(...args);
     
-    // Get the URL being requested
+    // Extract URL from request
     let url = '';
     if (typeof args[0] === 'string') {
       url = args[0];
@@ -42,55 +43,61 @@ export function setupGlobalErrorHandler() {
       url = args[0].href;
     }
     
-    // Check if this is a protected API endpoint
-    const isProtectedApi = protectedApiEndpoints.some(endpoint => url.includes(endpoint));
+    // Check if this is a protected API
+    const isProtectedApi = PROTECTED_API_ENDPOINTS.some(endpoint => url.includes(endpoint));
     
-    // Check if response is 401 (Unauthorized) and we're not already handling it
-    // Only trigger on protected API endpoints and not on login page
+    // Handle 401 responses from protected APIs
     if (response.status === 401 && 
         !isHandling401 && 
         isProtectedApi &&
         window.location.pathname !== '/login') {
       
-      isHandling401 = true;
-      
-      console.log('401 Unauthorized detected on protected API:', url, 'clearing session and redirecting to login');
-      
-      try {
-        // Clear Firebase auth state
-        await signOut(auth);
-        
-        // Clear session cookie by calling logout endpoint
-        await originalFetch('/api/session', {
-          method: 'DELETE',
-          credentials: 'include',
-        });
-      } catch (error) {
-        console.error('Error during logout process:', error);
-      }
-      
-      // Reset flag after a delay to allow for cleanup
-      setTimeout(() => {
-        isHandling401 = false;
-      }, 3000);
-      
-      // Redirect to login page with current path as return URL
-      const currentPath = window.location.pathname;
-      const returnUrl = currentPath !== '/login' && currentPath !== '/' ? `?returnUrl=${encodeURIComponent(currentPath)}` : '';
-      
-      // Use replace instead of href to prevent back button issues
-      window.location.replace(`/login${returnUrl}`);
+      await handleUnauthorized(originalFetch);
     }
     
     return response;
   };
   
-  // Mark as intercepted
   window.fetch.__intercepted = true;
 }
 
-// Hook to setup the global error handler
-export function useGlobalErrorHandler() {
+/**
+ * Handle unauthorized responses by clearing auth and redirecting to login
+ */
+async function handleUnauthorized(originalFetch: typeof fetch): Promise<void> {
+  isHandling401 = true;
+  
+  try {
+    // Clear Firebase authentication
+    await signOut(auth);
+    
+    // Clear server session
+    await originalFetch('/api/session', {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+  } catch (error) {
+    console.error('Error during logout process:', error);
+  }
+  
+  // Reset flag after delay
+  setTimeout(() => {
+    isHandling401 = false;
+  }, 3000);
+  
+  // Redirect to login with return URL
+  const currentPath = window.location.pathname;
+  const returnUrl = currentPath !== '/login' && currentPath !== '/' 
+    ? `?returnUrl=${encodeURIComponent(currentPath)}` 
+    : '';
+  
+  window.location.replace(`/login${returnUrl}`);
+}
+
+/**
+ * React hook to setup global error handler
+ */
+export function useGlobalErrorHandler(): void {
   useEffect(() => {
     setupGlobalErrorHandler();
   }, []);

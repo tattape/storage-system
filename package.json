@@ -7,8 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "migrate-sales-ordercount": "node migrate-sales-ordercount.js"
+    "lint": "next lint"
   },
   "dependencies": {
     "@heroui/react": "^2.8.2",
