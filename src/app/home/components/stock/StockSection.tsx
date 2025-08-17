@@ -243,9 +243,8 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                             placement={basketModalStyles.position}
                             scrollBehavior="inside"
                             classNames={{
-                                base: `max-h-[90vh] max-w-[95vw] sm:max-w-md ${basketModalStyles.className}`,
+                                base: `max-h-[90vh] max-w-[95vw] sm:max-w-md`,
                             }}
-                            style={basketModalStyles.styles}
                         >
                             <ModalContent className="modal-content-wrapper">
                                 <ModalHeader>Edit Basket</ModalHeader>
@@ -293,10 +292,9 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                 isDismissable={false}
                 placement={basketModalStyles.position}
                 classNames={{
-                    base: basketModalStyles.className,
+                    base: "",
                     wrapper: isMobileOrTablet ? "overflow-hidden" : "",
                 }}
-                style={basketModalStyles.styles}
             >
                 <ModalContent className="modal-content-wrapper">
                     <ModalHeader>Add New Basket</ModalHeader>

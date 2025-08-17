@@ -143,9 +143,8 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
             isDismissable={false}
             placement={modalStyles.position}
             classNames={{
-                base: `max-h-[90vh] max-w-[95vw] sm:max-w-lg ${modalStyles.className}`,
+                base: `max-h-[90vh] max-w-[95vw] sm:max-w-lg`,
             }}
-            style={modalStyles.styles}
         >
             <ModalContent>
                 <ModalHeader>Edit Sale (Basket)</ModalHeader>

@@ -137,11 +137,10 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
             placement={modalStyles.position}
             scrollBehavior="inside"
             classNames={{
-                base: `max-h-[90vh] max-w-[95vw] sm:max-w-xl ${modalStyles.className}`,
+                base: `max-h-[90vh] max-w-[95vw] sm:max-w-xl`,
                 wrapper: "overflow-hidden",
                 backdrop: "bg-black/50",
             }}
-            style={modalStyles.styles}
         >
             <ModalContent className="modal-content-wrapper">
                 <ModalHeader className="flex-shrink-0 flex flex-col items-center justify-center text-center px-4 py-3">

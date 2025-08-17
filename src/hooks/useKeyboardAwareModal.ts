@@ -98,22 +98,12 @@ export function useKeyboardAwareModal({ isOpen, isMobile = false }: KeyboardAwar
 
   // คำนวณ modal position และ styling
   const getModalStyles = () => {
-    if (!isMobile || !isKeyboardOpen) {
-      return {
-        position: 'center' as const,
-        styles: {},
-        className: ''
-      };
-    }
-
-    // เมื่อแป้นพิมพ์เปิด ให้ modal อยู่ตำแหน่งเดิม (center) แต่เพิ่ม scroll space
-    // โดยเพิ่ม padding-bottom เท่ากับความสูง keyboard เพื่อให้ scroll ได้มากขึ้น
+    // ไม่ส่ง styles ใดๆ กลับไป ให้ modal ใช้ขนาดปกติ 90vh
+    // แค่ใช้ body padding เพื่อเพิ่ม scroll space เมื่อ keyboard เปิด
     return {
       position: 'center' as const,
-      styles: {
-        paddingBottom: `${keyboardHeight}px`, // เพิ่ม scroll space
-      },
-      className: 'keyboard-aware-modal-scroll'
+      styles: {}, // ไม่มี style เพิ่มเติม
+      className: '' // ไม่มี class เพิ่มเติม
     };
   };
 

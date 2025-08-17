@@ -92,9 +92,8 @@ export default function AddProductModal({ isOpen, onClose, basketId, onProductAd
             placement={modalStyles.position}
             scrollBehavior="inside"
             classNames={{
-                base: `max-h-[90vh] max-w-[95vw] sm:max-w-md ${modalStyles.className}`,
+                base: `max-h-[90vh] max-w-[95vw] sm:max-w-md`,
             }}
-            style={modalStyles.styles}
         >
             <ModalContent className="modal-content-wrapper">
                 <ModalHeader>Add New Product</ModalHeader>
