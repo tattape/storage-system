@@ -18,13 +18,9 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
     const [action, setAction] = useState<'add' | 'remove' | null>(null);
     const [quantity, setQuantity] = useState(0);
 
-    // Detect mobile/tablet
-    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 1024;
-    
     // Keyboard aware modal
     const { modalStyles } = useKeyboardAwareModal({ 
-        isOpen, 
-        isMobile 
+        isOpen
     });
 
     const handleCloseModal = () => {

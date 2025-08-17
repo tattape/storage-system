@@ -20,13 +20,9 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
     const [orderCount, setOrderCount] = useState<number>(1);
     const [loading, setLoading] = useState(false);
 
-    // Detect mobile/tablet
-    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 1024;
-    
     // Keyboard aware modal
     const { modalStyles } = useKeyboardAwareModal({ 
-        isOpen, 
-        isMobile 
+        isOpen
     });
 
     useEffect(() => {

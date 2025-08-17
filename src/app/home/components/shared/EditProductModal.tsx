@@ -20,13 +20,9 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
         packSize: 1 
     });
 
-    // Detect mobile/tablet
-    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 1024;
-    
     // Keyboard aware modal
     const { modalStyles } = useKeyboardAwareModal({ 
-        isOpen, 
-        isMobile 
+        isOpen
     });
 
     useEffect(() => {

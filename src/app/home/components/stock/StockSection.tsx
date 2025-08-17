@@ -25,8 +25,7 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
 
     // Keyboard aware modal for basket creation/editing
     const { modalStyles: basketModalStyles } = useKeyboardAwareModal({ 
-        isOpen: modal === 'basket' || modal === 'editBasketName', 
-        isMobile: isMobileOrTablet 
+        isOpen: modal === 'basket' || modal === 'editBasketName'
     });
     const [selectedBasket, setSelectedBasket] = useState<any>(null);
     const [selectedProduct, setSelectedProduct] = useState<any>(null);

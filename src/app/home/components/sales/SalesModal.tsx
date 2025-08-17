@@ -23,13 +23,9 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
     const [orderCount, setOrderCount] = useState(1);
     const [loading, setLoading] = useState(false);
 
-    // Detect mobile/tablet
-    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 1024;
-    
     // Keyboard aware modal
     const { modalStyles } = useKeyboardAwareModal({ 
-        isOpen, 
-        isMobile 
+        isOpen
     });
 
     // Debounce search input

@@ -19,13 +19,9 @@ export default function AddProductModal({ isOpen, onClose, basketId, onProductAd
     const [packSize, setPackSize] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
-    // Detect mobile/tablet
-    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 1024;
-    
     // Keyboard aware modal
     const { modalStyles } = useKeyboardAwareModal({ 
-        isOpen, 
-        isMobile 
+        isOpen
     });
 
     const handleClose = () => {
