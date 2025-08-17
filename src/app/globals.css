@@ -112,6 +112,22 @@ body {
     transition: all 0.3s ease !important;
   }
 
+  /* Ensure modal body is fully scrollable when keyboard is open */
+  .keyboard-aware-modal .modal-body-scrollable {
+    max-height: calc(100% - 120px) !important; /* Reserve space for header and footer */
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 20px !important; /* Extra padding at bottom for easier scrolling */
+  }
+
+  /* Make sure inputs are accessible when focused */
+  .keyboard-aware-modal input:focus,
+  .keyboard-aware-modal textarea:focus,
+  .keyboard-aware-modal select:focus {
+    scroll-margin-top: 100px !important;
+    scroll-margin-bottom: 100px !important;
+  }
+
   /* Smoother transitions for mobile */
   [data-slot="base"] {
     transition: all 0.3s ease !important;
@@ -150,6 +166,10 @@ body {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  /* Improved scrolling for mobile keyboards */
+  scroll-behavior: smooth;
+  /* Add padding for better UX when keyboard is open */
+  padding-bottom: env(keyboard-inset-height, 0px);
 }
 
 /* Bottom Navigation Styles */

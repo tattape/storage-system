@@ -162,7 +162,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                         ))}
                     </div>
                 </ModalHeader>
-                <ModalBody className="px-4 sm:px-6 py-4 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto">
+                <ModalBody className="modal-body-scrollable px-4 sm:px-6 py-4">
                     {step === 0 && (
                         <div className="space-y-4">
                             {/* Search Input */}

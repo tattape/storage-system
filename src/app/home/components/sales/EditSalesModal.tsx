@@ -149,7 +149,7 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
         >
             <ModalContent>
                 <ModalHeader>Edit Sale (Basket)</ModalHeader>
-                <ModalBody className="px-4 sm:px-6 py-4 space-y-4 sm:space-y-6 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto">
+                <ModalBody className="modal-body-scrollable px-4 sm:px-6 py-4 space-y-4 sm:space-y-6">
                     {selectedSale && basket && (
                         <div className="flex flex-col gap-4">
                             <div className="space-y-3">

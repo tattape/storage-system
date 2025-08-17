@@ -30,6 +30,22 @@ export function useKeyboardAwareModal({ isOpen, isMobile = false }: KeyboardAwar
       setViewportHeight(currentHeight);
     };
 
+    // Auto-scroll function เมื่อ input ได้รับ focus
+    const handleInputFocus = (event: FocusEvent) => {
+      if (!isKeyboardOpen) return;
+      
+      const target = event.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
+        setTimeout(() => {
+          target.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center',
+            inline: 'nearest'
+          });
+        }, 300); // รอให้ keyboard animation เสร็จก่อน
+      }
+    };
+
     // ใช้ visualViewport API สำหรับ mobile keyboard detection
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', handleViewportChange);
@@ -38,14 +54,18 @@ export function useKeyboardAwareModal({ isOpen, isMobile = false }: KeyboardAwar
       window.addEventListener('resize', handleViewportChange);
     }
 
+    // เพิ่ม event listener สำหรับ input focus
+    document.addEventListener('focusin', handleInputFocus);
+
     return () => {
       if (window.visualViewport) {
         window.visualViewport.removeEventListener('resize', handleViewportChange);
       } else {
         window.removeEventListener('resize', handleViewportChange);
       }
+      document.removeEventListener('focusin', handleInputFocus);
     };
-  }, [isOpen, isMobile]);
+  }, [isOpen, isMobile, isKeyboardOpen]);
 
   // คำนวณ modal position และ styling
   const getModalStyles = () => {
@@ -57,14 +77,16 @@ export function useKeyboardAwareModal({ isOpen, isMobile = false }: KeyboardAwar
       };
     }
 
-    // เมื่อแป้นพิมพ์เปิด ขยับ modal ขึ้นมา
-    const modalOffset = Math.max(20, keyboardHeight * 0.3); // ขยับขึ้น 30% ของความสูงแป้นพิมพ์
+    // เมื่อแป้นพิมพ์เปิด ให้ modal อยู่ด้านบนและมี scroll space เพียงพอ
+    const safeAreaTop = 20; // พื้นที่ปลอดภัยด้านบน
+    const availableHeight = viewportHeight - safeAreaTop * 2; // ความสูงที่ใช้ได้
     
     return {
       position: 'top' as const,
       styles: {
-        marginTop: `${modalOffset}px`,
-        maxHeight: `${viewportHeight - modalOffset - 20}px`,
+        marginTop: `${safeAreaTop}px`,
+        maxHeight: `${availableHeight}px`,
+        minHeight: `${Math.min(availableHeight, 300)}px`, // ความสูงขั้นต่ำ
       },
       className: 'keyboard-aware-modal'
     };
