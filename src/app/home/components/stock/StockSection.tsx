@@ -241,9 +241,12 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                             size="md"
                             placement={basketModalStyles.position}
                             scrollBehavior="inside"
-                            style={basketModalStyles.styles}
+                            style={{
+                                ...basketModalStyles.styles,
+                                maxHeight: basketModalStyles.styles.maxHeight || undefined
+                            }}
                             classNames={{
-                                base: `h-auto max-h-[95vh] max-w-[95vw] sm:max-w-md ${basketModalStyles.className}`, // h-auto ให้สูงตามเนื้อหา แต่ไม่เกิน 95vh
+                                base: `h-auto ${basketModalStyles.styles.maxHeight ? '' : 'max-h-[95vh]'} max-w-[95vw] sm:max-w-md ${basketModalStyles.className}`, // h-auto ให้สูงตามเนื้อหา แต่ไม่เกิน 95vh หรือตาม maxHeight จาก hook
                             }}
                         >
                             <ModalContent className="modal-content-wrapper">
@@ -291,9 +294,12 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                 size="md"
                 isDismissable={false}
                 placement={basketModalStyles.position}
-                style={basketModalStyles.styles}
+                style={{
+                    ...basketModalStyles.styles,
+                    maxHeight: basketModalStyles.styles.maxHeight || undefined
+                }}
                 classNames={{
-                    base: basketModalStyles.className,
+                    base: `h-auto ${basketModalStyles.styles.maxHeight ? '' : 'max-h-[95vh]'} ${basketModalStyles.className}`,
                     wrapper: isMobileOrTablet ? "overflow-hidden" : "",
                 }}
             >

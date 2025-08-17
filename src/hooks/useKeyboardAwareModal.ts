@@ -30,6 +30,14 @@ export function useKeyboardAwareModal({ isOpen }: KeyboardAwareModalOptions) {
       // ถือว่าแป้นพิมพ์เปิดเมื่อ viewport สูงลดลงมากกว่า 150px
       const keyboardIsOpen = heightDifference > 150;
       
+      console.log('🔍 Keyboard detection:', {
+        initialHeight: initialViewportHeight,
+        currentHeight,
+        heightDifference,
+        keyboardIsOpen,
+        isMobile: typeof window !== 'undefined' && (window.innerWidth <= 1024 || 'ontouchstart' in window)
+      });
+      
       setKeyboardHeight(keyboardIsOpen ? heightDifference : 0);
       setIsKeyboardOpen(keyboardIsOpen);
     };
@@ -66,16 +74,21 @@ export function useKeyboardAwareModal({ isOpen }: KeyboardAwareModalOptions) {
     }
 
     // เมื่อมี keyboard ให้ปรับ modal ให้อยู่เหนือ keyboard
-    const availableHeight = window.visualViewport?.height || window.innerHeight;
-    const topOffset = Math.max(20, availableHeight * 0.1); // เริ่มจากตำแหน่ง 10% จากด้านบน
+    const availableHeight = (window.visualViewport?.height || window.innerHeight) - 40; // เหลือ padding 20px บน-ล่าง
+    const topOffset = 20; // เริ่มจากด้านบน 20px
 
-    return {
+    const modalStyles = {
       position: 'top' as const,
       styles: {
-        transform: `translateY(${topOffset}px)`
+        transform: `translateY(${topOffset}px)`,
+        maxHeight: `${availableHeight}px`
       },
       className: 'keyboard-aware-modal'
     };
+
+    console.log('🎯 Modal styles applied:', modalStyles);
+    
+    return modalStyles;
   };
 
   return {

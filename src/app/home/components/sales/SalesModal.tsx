@@ -130,9 +130,12 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
             hideCloseButton={false}
             placement={modalStyles.position}
             scrollBehavior="inside"
-            style={modalStyles.styles}
+            style={{
+                ...modalStyles.styles,
+                maxHeight: modalStyles.styles.maxHeight || undefined
+            }}
             classNames={{
-                base: `h-auto max-h-[95vh] max-w-[95vw] sm:max-w-xl ${modalStyles.className}`, // h-auto ให้สูงตามเนื้อหา แต่ไม่เกิน 95vh
+                base: `h-auto ${modalStyles.styles.maxHeight ? '' : 'max-h-[95vh]'} max-w-[95vw] sm:max-w-xl ${modalStyles.className}`, // h-auto ให้สูงตามเนื้อหา แต่ไม่เกิน 95vh หรือตาม maxHeight จาก hook
                 wrapper: "overflow-hidden",
                 backdrop: "bg-black/50",
             }}
@@ -354,6 +357,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                     )}
                 </ModalBody>
                 <ModalFooter>
+                    {step === 0 && <Button variant="light" onPress={handleCloseModal}>Close</Button>}
                     {step > 0 && <Button variant="light" onPress={prevStep}>Back</Button>}
                     {step > 0 && step < 2 && <Button color="primary" onPress={nextStep}>Next</Button>}
                     {step === 2 && (

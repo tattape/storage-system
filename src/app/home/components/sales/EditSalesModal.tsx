@@ -138,9 +138,12 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
             scrollBehavior="inside"
             isDismissable={false}
             placement={modalStyles.position}
-            style={modalStyles.styles}
+            style={{
+                ...modalStyles.styles,
+                maxHeight: modalStyles.styles.maxHeight || undefined
+            }}
             classNames={{
-                base: `h-auto max-h-[95vh] max-w-[95vw] sm:max-w-lg ${modalStyles.className}`, // h-auto ให้สูงตามเนื้อหา แต่ไม่เกิน 95vh
+                base: `h-auto ${modalStyles.styles.maxHeight ? '' : 'max-h-[95vh]'} max-w-[95vw] sm:max-w-lg ${modalStyles.className}`, // h-auto ให้สูงตามเนื้อหา แต่ไม่เกิน 95vh หรือตาม maxHeight จาก hook
             }}
         >
             <ModalContent>

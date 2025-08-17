@@ -87,9 +87,12 @@ export default function AddProductModal({ isOpen, onClose, basketId, onProductAd
             isDismissable={false}
             placement={modalStyles.position}
             scrollBehavior="inside"
-            style={modalStyles.styles}
+            style={{
+                ...modalStyles.styles,
+                maxHeight: modalStyles.styles.maxHeight || undefined
+            }}
             classNames={{
-                base: `h-auto max-h-[95vh] max-w-[95vw] sm:max-w-md ${modalStyles.className}`, // h-auto ให้สูงตามเนื้อหา แต่ไม่เกิน 95vh
+                base: `h-auto ${modalStyles.styles.maxHeight ? '' : 'max-h-[95vh]'} max-w-[95vw] sm:max-w-md ${modalStyles.className}`, // h-auto ให้สูงตามเนื้อหา แต่ไม่เกิน 95vh หรือตาม maxHeight จาก hook
             }}
         >
             <ModalContent className="modal-content-wrapper">
