@@ -52,17 +52,9 @@ export function setupGlobalErrorHandler(): void {
         window.location.pathname !== '/login') {
       
       console.log('🔒 401 detected, handling unauthorized access for:', url);
-      console.log('Current pathname:', window.location.pathname);
-      console.log('isHandling401:', isHandling401);
-      console.log('isProtectedApi:', isProtectedApi);
       await handleUnauthorized(originalFetch);
     } else if (response.status === 401) {
-      console.log('🔒 401 detected but not handling:', {
-        url,
-        isHandling401,
-        isProtectedApi,
-        pathname: window.location.pathname
-      });
+      // 401 detected but not handling due to conditions
     }
     
     return response;

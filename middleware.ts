@@ -14,7 +14,6 @@ export async function middleware(req: NextRequest) {
 
     const token = req.cookies.get('token')?.value;
     if (!token) {
-        console.log('🔒 Middleware: No token found, redirecting to login');
         const loginUrl = req.nextUrl.clone();
         loginUrl.pathname = '/login';
         return NextResponse.redirect(loginUrl);
@@ -23,7 +22,6 @@ export async function middleware(req: NextRequest) {
     // Verify token
     try {
         const decodedToken = await verifyIdToken(token);
-        console.log('✅ Middleware: Token verified for user:', decodedToken.email);
         
         // Check if path requires owner role
         if (OWNER_ONLY_PATHS.some(path => pathname.startsWith(path))) {
@@ -33,7 +31,7 @@ export async function middleware(req: NextRequest) {
         }
         
     } catch (error) {
-        console.log('🔒 Middleware: Token verification failed:', error);
+        console.error('🔒 Middleware: Token verification failed:', error);
         
         // Clear invalid token
         const response = NextResponse.redirect(new URL('/login', req.url));
@@ -43,7 +41,6 @@ export async function middleware(req: NextRequest) {
 
     // If user is on /login and already logged in, redirect to home
     if (pathname === '/login') {
-        console.log('🔄 Middleware: Logged in user accessing /login, redirecting to /home');
         const homeUrl = req.nextUrl.clone();
         homeUrl.pathname = '/home';
         return NextResponse.redirect(homeUrl);

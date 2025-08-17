@@ -140,7 +140,7 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
             placement={modalStyles.position}
             style={modalStyles.styles}
             classNames={{
-                base: `max-h-[90vh] max-w-[95vw] sm:max-w-lg ${modalStyles.className}`,
+                base: `h-auto max-h-[95vh] max-w-[95vw] sm:max-w-lg ${modalStyles.className}`, // h-auto ให้สูงตามเนื้อหา แต่ไม่เกิน 95vh
             }}
         >
             <ModalContent>
@@ -203,7 +203,7 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
                             
                             <div className="flex flex-col">
                                 <h4 className="font-medium text-gray-700 mb-2 sticky top-0 bg-white z-10">Products</h4>
-                                <div className="max-h-[180px] overflow-y-auto space-y-2 pr-2">
+                                <div className="overflow-y-auto space-y-2 pr-2">{/* ลบ max-height ออก ให้ใช้ scroll ของ modal */}
                                     {(basket.products || []).map((p: any) => (
                                 <div key={p.id} className="flex flex-col items-center gap-3 mb-4 bg-gray-50 rounded-lg p-4">
                                     <span className="font-medium text-sm sm:text-base text-center">{p.name}</span>

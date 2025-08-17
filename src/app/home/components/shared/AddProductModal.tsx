@@ -89,7 +89,7 @@ export default function AddProductModal({ isOpen, onClose, basketId, onProductAd
             scrollBehavior="inside"
             style={modalStyles.styles}
             classNames={{
-                base: `max-h-[90vh] max-w-[95vw] sm:max-w-md ${modalStyles.className}`,
+                base: `h-auto max-h-[95vh] max-w-[95vw] sm:max-w-md ${modalStyles.className}`, // h-auto ให้สูงตามเนื้อหา แต่ไม่เกิน 95vh
             }}
         >
             <ModalContent className="modal-content-wrapper">

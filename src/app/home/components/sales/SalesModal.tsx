@@ -53,8 +53,6 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
     const nextStep = () => setStep((s) => Math.min(s + 1, 2));
     const prevStep = () => setStep((s) => Math.max(s - 1, 0));
 
-    // ...existing code...
-
     const handleSaveSale = async () => {
         setLoading(true);
         try {
@@ -134,7 +132,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
             scrollBehavior="inside"
             style={modalStyles.styles}
             classNames={{
-                base: `max-h-[90vh] max-w-[95vw] sm:max-w-xl ${modalStyles.className}`,
+                base: `h-auto max-h-[95vh] max-w-[95vw] sm:max-w-xl ${modalStyles.className}`, // h-auto ให้สูงตามเนื้อหา แต่ไม่เกิน 95vh
                 wrapper: "overflow-hidden",
                 backdrop: "bg-black/50",
             }}
@@ -334,7 +332,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                             {/* Order Summary Section - Scrollable */}
                             <div className="bg-white border rounded-lg p-4 flex-1 min-h-0">
                                 <h4 className="font-semibold text-base mb-3 text-center">Order Summary</h4>
-                                <div className="max-h-40 sm:max-h-48 md:max-h-32 overflow-y-auto border rounded-lg p-2">
+                                <div className="overflow-y-auto border rounded-lg p-2">
                                     {products.filter((p: any) => (productCounts[p.id] || 0) > 0).map((p: any) => (
                                         <div key={p.id} className="flex justify-between items-center py-1.5 px-2 bg-gray-50 rounded mb-1 last:mb-0">
                                             <span className="font-medium text-xs sm:text-sm truncate flex-1 mr-2">{p.name}</span>
@@ -355,15 +353,13 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                         </div>
                     )}
                 </ModalBody>
-                <ModalFooter className="flex-shrink-0 flex-col sm:flex-row gap-2 p-3 sm:p-4">
-                    {step > 0 && <Button variant="light" onPress={prevStep} className="w-full sm:w-auto text-base" size="sm">Back</Button>}
-                    {step > 0 && step < 2 && <Button color="primary" onPress={nextStep} className="w-full sm:w-auto text-base" size="sm">Next</Button>}
+                <ModalFooter>
+                    {step > 0 && <Button variant="light" onPress={prevStep}>Back</Button>}
+                    {step > 0 && step < 2 && <Button color="primary" onPress={nextStep}>Next</Button>}
                     {step === 2 && (
                         <Button
                             color="success"
                             onPress={handleSaveSale}
-                            className="w-full sm:w-auto text-base"
-                            size="sm"
                             isLoading={loading}
                             disabled={loading}
                         >

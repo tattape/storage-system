@@ -107,41 +107,13 @@ body {
     /* Prevents zoom on focus */
   }
 
-  /* Keyboard aware modal - original version */
-  .keyboard-aware-modal {
-    transition: all 0.3s ease !important;
-  }
-
-  /* Keyboard aware modal with scroll enhancement - no position change */
-  .keyboard-aware-modal-scroll {
-    transition: padding-bottom 0.3s ease !important;
-  }
-
-  /* Enhanced scrolling for modal when keyboard is open */
-  .keyboard-aware-modal-scroll .modal-body-scrollable {
-    scroll-padding-bottom: 150px !important; /* Extra scroll space at bottom */
-  }
-
-  /* Ensure modal body is fully scrollable when keyboard is open */
-  .keyboard-aware-modal .modal-body-scrollable {
-    max-height: calc(100% - 120px) !important; /* Reserve space for header and footer */
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    padding-bottom: 20px !important; /* Extra padding at bottom for easier scrolling */
-  }
-
-  /* Make sure inputs are accessible when focused - simplified */
-  .keyboard-aware-modal input:focus,
-  .keyboard-aware-modal textarea:focus,
-  .keyboard-aware-modal select:focus {
-    scroll-margin-bottom: 150px !important;
-  }
-
-  /* Additional support for all inputs in modal - simplified */
-  .modal-body-scrollable input:focus,
-  .modal-body-scrollable textarea:focus,
-  .modal-body-scrollable select:focus {
-    scroll-margin-bottom: 120px !important;
+  /* Mobile input optimization - simplified */
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"] {
+    font-size: 16px !important;
+    /* Prevents zoom on focus */
   }
 
   /* Smoother transitions for mobile */
@@ -186,30 +158,9 @@ body {
   scroll-behavior: smooth;
   min-height: 0;
   position: relative;
-  /* เพิ่ม padding ด้านล่างเสมอ เพื่อให้ input ด้านล่างสามารถ scroll ขึ้นมาได้ */
-  padding-bottom: 150px !important;
 }
 
-/* Keyboard-aware modal adjustments - เฉพาะ mobile/tablet และเมื่อ keyboard เปิด */
-@media (max-width: 1024px) {
-  .keyboard-open .modal-body-scrollable {
-    /* เพิ่ม scroll space เฉพาะเมื่อ keyboard เปิด */
-    padding-bottom: 400px !important;
-    scroll-padding-bottom: 400px !important;
-  }
-  
-  /* เพิ่ม margin สำหรับ section สุดท้ายใน modal */
-  .keyboard-open .modal-body-scrollable > div:last-child {
-    margin-bottom: 300px !important;
-  }
-  
-  /* เมื่อมี input focus ใน modal และ keyboard เปิด */
-  .keyboard-open .modal-body-scrollable input:focus,
-  .keyboard-open .modal-body-scrollable textarea:focus,
-  .keyboard-open .modal-body-scrollable select:focus {
-    scroll-margin-bottom: 350px !important;
-  }
-}
+/* ลบ keyboard-aware CSS ที่ไม่จำเป็น เพราะ modal ขยับขึ้นไปเหนือ keyboard แล้ว */
 
 /* Bottom Navigation Styles */
 .bottom-nav-padding {

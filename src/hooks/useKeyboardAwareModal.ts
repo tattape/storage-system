@@ -32,13 +32,6 @@ export function useKeyboardAwareModal({ isOpen }: KeyboardAwareModalOptions) {
       
       setKeyboardHeight(keyboardIsOpen ? heightDifference : 0);
       setIsKeyboardOpen(keyboardIsOpen);
-      
-      // เพิ่ม/ลบ class เฉพาะเมื่อ keyboard เปิด/ปิด
-      if (keyboardIsOpen) {
-        document.body.classList.add('keyboard-open');
-      } else {
-        document.body.classList.remove('keyboard-open');
-      }
     };
 
     // ใช้ visualViewport API สำหรับ mobile keyboard detection
@@ -56,10 +49,8 @@ export function useKeyboardAwareModal({ isOpen }: KeyboardAwareModalOptions) {
         window.removeEventListener('resize', handleViewportChange);
       }
       
-      // Clean up when component unmounts
-      if (typeof document !== 'undefined') {
-        document.body.classList.remove('keyboard-open');
-      }
+      // Clean up when component unmounts  
+      // ไม่ต้องทำอะไรเพิ่มเติม เพราะไม่ได้ใช้ body class หรือ padding แล้ว
     };
   }, [isOpen]);
 
@@ -76,15 +67,12 @@ export function useKeyboardAwareModal({ isOpen }: KeyboardAwareModalOptions) {
 
     // เมื่อมี keyboard ให้ปรับ modal ให้อยู่เหนือ keyboard
     const availableHeight = window.visualViewport?.height || window.innerHeight;
-    const modalHeight = Math.min(availableHeight * 0.8, 600); // ความสูงสูงสุด 80% ของหน้าจอที่เหลือ
-    const topOffset = Math.max(20, (availableHeight - modalHeight) / 2);
+    const topOffset = Math.max(20, availableHeight * 0.1); // เริ่มจากตำแหน่ง 10% จากด้านบน
 
     return {
       position: 'top' as const,
       styles: {
-        transform: `translateY(${topOffset}px)`,
-        maxHeight: `${modalHeight}px`,
-        height: 'auto'
+        transform: `translateY(${topOffset}px)`
       },
       className: 'keyboard-aware-modal'
     };
