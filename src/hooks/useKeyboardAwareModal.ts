@@ -32,25 +32,32 @@ export function useKeyboardAwareModal({ isOpen, isMobile = false }: KeyboardAwar
 
     // Auto-scroll function เมื่อ input ได้รับ focus
     const handleInputFocus = (event: FocusEvent) => {
-      if (!isKeyboardOpen) return;
-      
       const target = event.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
         setTimeout(() => {
-          // Scroll with extra bottom offset to ensure input is well above keyboard
-          const rect = target.getBoundingClientRect();
-          const windowHeight = window.innerHeight;
-          const keyboardTop = windowHeight - keyboardHeight;
+          // Force scroll to center the input in the available viewport
+          // This ensures input is positioned above the keyboard
+          target.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center', // Center the input in the visible area
+            inline: 'nearest'
+          });
           
-          // If input is below keyboard, scroll it to safe position
-          if (rect.bottom > keyboardTop - 100) { // 100px buffer above keyboard
-            target.scrollIntoView({ 
-              behavior: 'smooth', 
-              block: 'center',
-              inline: 'nearest'
-            });
-          }
-        }, 300); // รอให้ keyboard animation เสร็จก่อน
+          // Additional scroll adjustment for keyboard space
+          setTimeout(() => {
+            const rect = target.getBoundingClientRect();
+            const currentViewportHeight = window.visualViewport?.height || window.innerHeight;
+            const targetCenter = currentViewportHeight / 2;
+            
+            // If input is not well centered above keyboard, adjust scroll
+            if (rect.top + rect.height / 2 > targetCenter) {
+              window.scrollBy({
+                top: (rect.top + rect.height / 2) - targetCenter + 50, // Extra 50px above center
+                behavior: 'smooth'
+              });
+            }
+          }, 100); // Short delay for initial scroll to complete
+        }, 100); // Reduced delay for faster response
       }
     };
 
@@ -59,8 +66,10 @@ export function useKeyboardAwareModal({ isOpen, isMobile = false }: KeyboardAwar
       if (typeof window === 'undefined') return;
       
       if (isKeyboardOpen && keyboardHeight > 0) {
-        // Add extra scroll space at bottom when keyboard is open
-        document.body.style.paddingBottom = `${keyboardHeight + 50}px`;
+        // Add generous scroll space at bottom when keyboard is open
+        // This ensures inputs can always scroll above the keyboard
+        const extraSpace = keyboardHeight + 200; // Keyboard height + 200px extra space
+        document.body.style.paddingBottom = `${extraSpace}px`;
       } else {
         // Remove extra padding when keyboard is closed
         document.body.style.paddingBottom = '';

@@ -138,7 +138,15 @@ body {
   .keyboard-aware-modal-scroll textarea:focus,
   .keyboard-aware-modal-scroll select:focus {
     scroll-margin-top: 100px !important;
-    scroll-margin-bottom: 150px !important; /* Increased bottom margin for keyboard space */
+    scroll-margin-bottom: 200px !important; /* Increased bottom margin for keyboard space */
+  }
+
+  /* Additional support for all inputs in modal */
+  .modal-body-scrollable input:focus,
+  .modal-body-scrollable textarea:focus,
+  .modal-body-scrollable select:focus {
+    scroll-margin-top: 80px !important;
+    scroll-margin-bottom: 180px !important;
   }
 
   /* Smoother transitions for mobile */
@@ -186,6 +194,8 @@ body {
   padding-bottom: env(keyboard-inset-height, 0px);
   /* Ensure minimum height for proper flex behavior */
   min-height: 0;
+  /* Add extra padding bottom for keyboard space */
+  scroll-padding-bottom: 200px;
 }
 
 /* Bottom Navigation Styles */
