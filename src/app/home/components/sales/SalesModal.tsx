@@ -132,10 +132,10 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
             scrollBehavior="inside"
             style={{
                 ...modalStyles.styles,
-                maxHeight: modalStyles.styles.maxHeight || undefined
+                maxHeight: 'maxHeight' in modalStyles.styles ? modalStyles.styles.maxHeight : undefined
             }}
             classNames={{
-                base: `h-auto ${modalStyles.styles.maxHeight ? '' : 'max-h-[95vh]'} max-w-[95vw] sm:max-w-xl ${modalStyles.className}`, // h-auto ให้สูงตามเนื้อหา แต่ไม่เกิน 95vh หรือตาม maxHeight จาก hook
+                base: `h-auto ${'maxHeight' in modalStyles.styles ? '' : 'max-h-[95vh]'} max-w-[95vw] sm:max-w-xl ${modalStyles.className}`, // h-auto ให้สูงตามเนื้อหา แต่ไม่เกิน 95vh หรือตาม maxHeight จาก hook
                 wrapper: "overflow-hidden",
                 backdrop: "bg-black/50",
             }}

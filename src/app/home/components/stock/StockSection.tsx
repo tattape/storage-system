@@ -243,10 +243,10 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                             scrollBehavior="inside"
                             style={{
                                 ...basketModalStyles.styles,
-                                maxHeight: basketModalStyles.styles.maxHeight || undefined
+                                maxHeight: 'maxHeight' in basketModalStyles.styles ? basketModalStyles.styles.maxHeight : undefined
                             }}
                             classNames={{
-                                base: `h-auto ${basketModalStyles.styles.maxHeight ? '' : 'max-h-[95vh]'} max-w-[95vw] sm:max-w-md ${basketModalStyles.className}`, // h-auto ให้สูงตามเนื้อหา แต่ไม่เกิน 95vh หรือตาม maxHeight จาก hook
+                                base: `h-auto ${'maxHeight' in basketModalStyles.styles ? '' : 'max-h-[95vh]'} max-w-[95vw] sm:max-w-md ${basketModalStyles.className}`, // h-auto ให้สูงตามเนื้อหา แต่ไม่เกิน 95vh หรือตาม maxHeight จาก hook
                             }}
                         >
                             <ModalContent className="modal-content-wrapper">
@@ -296,10 +296,10 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                 placement={basketModalStyles.position}
                 style={{
                     ...basketModalStyles.styles,
-                    maxHeight: basketModalStyles.styles.maxHeight || undefined
+                    maxHeight: 'maxHeight' in basketModalStyles.styles ? basketModalStyles.styles.maxHeight : undefined
                 }}
                 classNames={{
-                    base: `h-auto ${basketModalStyles.styles.maxHeight ? '' : 'max-h-[95vh]'} ${basketModalStyles.className}`,
+                    base: `h-auto ${'maxHeight' in basketModalStyles.styles ? '' : 'max-h-[95vh]'} ${basketModalStyles.className}`,
                     wrapper: isMobileOrTablet ? "overflow-hidden" : "",
                 }}
             >
