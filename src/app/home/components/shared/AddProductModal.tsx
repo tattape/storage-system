@@ -1,8 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Input } from "@heroui/react";
 import { addProductToBasket } from "../../../../services/baskets";
-import { useKeyboardHeight } from "../../../../hooks/useKeyboardHeight";
 
 interface AddProductModalProps {
     isOpen: boolean;
@@ -18,21 +17,6 @@ export default function AddProductModal({ isOpen, onClose, basketId, onProductAd
     const [minStock, setMinStock] = useState("");
     const [packSize, setPackSize] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    
-    const { keyboardHeight, isMobileOrTablet } = useKeyboardHeight();
-
-    // Body scroll lock when modal is open on mobile/tablet
-    useEffect(() => {
-        if (isOpen && isMobileOrTablet) {
-            document.body.classList.add('modal-open');
-        } else {
-            document.body.classList.remove('modal-open');
-        }
-        
-        return () => {
-            document.body.classList.remove('modal-open');
-        };
-    }, [isOpen, isMobileOrTablet]);
 
     const handleClose = () => {
         setProductName("");
@@ -74,13 +58,13 @@ export default function AddProductModal({ isOpen, onClose, basketId, onProductAd
                 packSize: packSizeNum
             });
             
-            // Trigger refresh first
-            onProductAdded();
+            // Close modal first
+            handleClose();
             
-            // Close modal after a short delay to ensure refresh completes
+            // Small delay to let modal close animation complete before refreshing
             setTimeout(() => {
-                handleClose();
-            }, 100);
+                onProductAdded();
+            }, 300);
         } catch (error) {
             console.error("Error adding product:", error);
             alert("Failed to add product. Please try again.");
@@ -89,34 +73,13 @@ export default function AddProductModal({ isOpen, onClose, basketId, onProductAd
         }
     };
 
-    // Calculate modal position and style based on keyboard
-    const isKeyboardOpen = keyboardHeight > 0;
-    const modalPlacement = isMobileOrTablet && isKeyboardOpen ? "top" : "center";
-    
-    // Calculate available space for modal
-    const availableHeight = typeof window !== 'undefined' 
-      ? (isKeyboardOpen ? window.innerHeight - keyboardHeight - 20 : window.innerHeight - 40)
-      : 'auto';
-    
-    const modalClassName = isMobileOrTablet && isKeyboardOpen 
-      ? "modal-keyboard-avoid modal-scrollable" 
-      : (isMobileOrTablet ? "modal-scrollable" : "");
-
     return (
         <Modal 
             isOpen={isOpen} 
             onClose={handleClose} 
             size="md"
             isDismissable={false}
-            placement={modalPlacement}
-            classNames={{
-                base: modalClassName,
-                wrapper: isMobileOrTablet ? "overflow-hidden" : "",
-            }}
-            style={isMobileOrTablet && isKeyboardOpen ? {
-                maxHeight: `${availableHeight}px`,
-                marginTop: '10px',
-            } : {}}
+            placement="center"
         >
             <ModalContent className="modal-content-wrapper">
                 <ModalHeader>Add New Product</ModalHeader>

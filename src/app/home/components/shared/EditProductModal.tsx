@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Input } from "@heroui/react";
 import { updateProductInBasket } from "../../../../services/baskets";
-import { useKeyboardHeight } from "../../../../hooks/useKeyboardHeight";
 
 interface EditProductModalProps {
     isOpen: boolean;
@@ -20,8 +19,6 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
         packSize: 1 
     });
 
-    const { keyboardHeight, isMobileOrTablet } = useKeyboardHeight();
-
     useEffect(() => {
         if (product && isOpen) {
             setProductForm({
@@ -32,19 +29,6 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
             });
         }
     }, [product, isOpen]);
-
-    // Body scroll lock when modal is open on mobile/tablet
-    useEffect(() => {
-        if (isOpen && isMobileOrTablet) {
-            document.body.classList.add('modal-open');
-        } else {
-            document.body.classList.remove('modal-open');
-        }
-        
-        return () => {
-            document.body.classList.remove('modal-open');
-        };
-    }, [isOpen, isMobileOrTablet]);
 
     const handleCloseModal = () => {
         setProductForm({ name: "", minStock: 0, price: 0, packSize: 1 });
@@ -64,7 +48,11 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
                 packSize: Number(productForm.packSize) || 1
             });
             handleCloseModal();
-            onProductUpdated();
+            
+            // Small delay to let modal close animation complete before refreshing
+            setTimeout(() => {
+                onProductUpdated();
+            }, 300);
         } catch (error) {
             console.error("Error updating product:", error);
             alert("Failed to update product. Please try again.");
@@ -73,34 +61,13 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
         }
     };
 
-    // Calculate modal position and style based on keyboard
-    const isKeyboardOpen = keyboardHeight > 0;
-    const modalPlacement = isMobileOrTablet && isKeyboardOpen ? "top" : "center";
-    
-    // Calculate available space for modal
-    const availableHeight = typeof window !== 'undefined' 
-      ? (isKeyboardOpen ? window.innerHeight - keyboardHeight - 20 : window.innerHeight - 40)
-      : 'auto';
-    
-    const modalClassName = isMobileOrTablet && isKeyboardOpen 
-      ? "modal-keyboard-avoid modal-scrollable" 
-      : (isMobileOrTablet ? "modal-scrollable" : "");
-
     return (
         <Modal 
             isOpen={isOpen} 
             onClose={handleCloseModal} 
             size="md"
             isDismissable={false}
-            placement={modalPlacement}
-            classNames={{
-                base: modalClassName,
-                wrapper: isMobileOrTablet ? "overflow-hidden" : "",
-            }}
-            style={isMobileOrTablet && isKeyboardOpen ? {
-                maxHeight: `${availableHeight}px`,
-                marginTop: '10px',
-            } : {}}
+            placement="center"
         >
             <ModalContent className="modal-content-wrapper">
                 <ModalHeader>Edit Product</ModalHeader>

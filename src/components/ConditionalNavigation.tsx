@@ -12,16 +12,22 @@ export default function ConditionalNavigation() {
     // Don't show navigation on login page or root page
     const hideNavigation = pathname === '/login' || pathname === '/';
 
-    // Manage body padding for bottom navigation
+    // Manage body padding for navigation
     useEffect(() => {
         if (isMobileOrTablet && !hideNavigation) {
             document.body.classList.add('bottom-nav-padding');
+            document.body.classList.remove('top-navbar-padding');
+        } else if (!isMobileOrTablet && !hideNavigation) {
+            document.body.classList.add('top-navbar-padding');
+            document.body.classList.remove('bottom-nav-padding');
         } else {
             document.body.classList.remove('bottom-nav-padding');
+            document.body.classList.remove('top-navbar-padding');
         }
 
         return () => {
             document.body.classList.remove('bottom-nav-padding');
+            document.body.classList.remove('top-navbar-padding');
         };
     }, [isMobileOrTablet, hideNavigation]);
 

@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Input } from "@heroui/react";
 import { updateProductInBasket } from "../../../../services/baskets";
 import { addSale, deleteSale } from "../../../../services/sales";
-import { useKeyboardHeight } from "../../../../hooks/useKeyboardHeight";
 
 interface EditSalesModalProps {
     isOpen: boolean;
@@ -19,21 +18,6 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
     const [trackingNumber, setTrackingNumber] = useState<string>("");
     const [orderCount, setOrderCount] = useState<number>(1);
     const [loading, setLoading] = useState(false);
-
-    const { keyboardHeight, isMobileOrTablet } = useKeyboardHeight();
-
-    // Body scroll lock when modal is open on mobile/tablet
-    useEffect(() => {
-        if (isOpen && isMobileOrTablet) {
-            document.body.classList.add('modal-open');
-        } else {
-            document.body.classList.remove('modal-open');
-        }
-        
-        return () => {
-            document.body.classList.remove('modal-open');
-        };
-    }, [isOpen, isMobileOrTablet]);
 
     useEffect(() => {
         if (selectedSale && isOpen) {
@@ -117,7 +101,11 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
 
             setEditProductCounts({});
             onClose();
-            onSaleUpdated();
+            
+            // Small delay to let modal close animation complete before refreshing
+            setTimeout(() => {
+                onSaleUpdated();
+            }, 300);
         } catch (error) {
             console.error('Error updating sale:', error);
             window.alert('Error occurred while updating sale. Please try again.');
@@ -136,19 +124,6 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
 
     const basket = baskets.find((b: any) => b.id === selectedSale?.basketId);
 
-    // Calculate modal position and style based on keyboard
-    const isKeyboardOpen = keyboardHeight > 0;
-    const modalPlacement = isMobileOrTablet && isKeyboardOpen ? "top" : "center";
-    
-    // Calculate available space for modal
-    const availableHeight = typeof window !== 'undefined' 
-      ? (isKeyboardOpen ? window.innerHeight - keyboardHeight - 20 : window.innerHeight - 40)
-      : 'auto';
-    
-    const modalClassName = isMobileOrTablet && isKeyboardOpen 
-      ? "modal-keyboard-avoid modal-scrollable" 
-      : (isMobileOrTablet ? "modal-scrollable" : "");
-
     return (
         <Modal 
             isOpen={isOpen} 
@@ -156,19 +131,14 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
             size="lg" 
             scrollBehavior="inside"
             isDismissable={false}
-            placement={modalPlacement}
+            placement="center"
             classNames={{
-                base: modalClassName,
-                wrapper: isMobileOrTablet ? "overflow-hidden" : "",
+                base: "max-h-[90vh] max-w-[95vw] sm:max-w-lg",
             }}
-            style={isMobileOrTablet && isKeyboardOpen ? {
-                maxHeight: `${availableHeight}px`,
-                marginTop: '10px',
-            } : {}}
         >
-            <ModalContent className="modal-content-wrapper">
+            <ModalContent>
                 <ModalHeader>Edit Sale (Basket)</ModalHeader>
-                <ModalBody className="modal-body-scrollable">
+                <ModalBody className="px-4 sm:px-6 py-4 space-y-4 sm:space-y-6 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto">
                     {selectedSale && basket && (
                         <div className="flex flex-col gap-4">
                             <div className="space-y-3">
@@ -188,17 +158,37 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
                                         onChange={(e) => setTrackingNumber(e.target.value)}
                                     />
                                 </div>
-                                <div>
-                                    <Input
-                                        type="number"
-                                        label="Number of Orders"
-                                        placeholder="Enter number of orders"
-                                        value={orderCount.toString()}
-                                        onChange={(e) => setOrderCount(Math.max(1, Number(e.target.value) || 1))}
-                                        min={1}
-                                        description="How many orders of this basket were sold?"
-                                    />
+                                
+                                {/* Number of Orders with +/- buttons */}
+                                <div className="space-y-2">
+                                    <label className="text-sm text-gray-600 font-medium">Number of Orders</label>
+                                    <div className="flex items-center justify-center gap-4">
+                                        <Button 
+                                            size="lg" 
+                                            onPress={() => setOrderCount(Math.max(1, orderCount - 1))}
+                                            isDisabled={orderCount <= 1}
+                                            className="min-w-unit-12 h-12 text-xl font-bold"
+                                            color="default"
+                                            variant="bordered"
+                                        >
+                                            -
+                                        </Button>
+                                        <div className="bg-gray-100 rounded-lg px-6 py-3 min-w-[80px] text-center">
+                                            <span className="text-2xl font-bold text-gray-800">{orderCount}</span>
+                                        </div>
+                                        <Button 
+                                            size="lg" 
+                                            onPress={() => setOrderCount(orderCount + 1)}
+                                            className="min-w-unit-12 h-12 text-xl font-bold"
+                                            color="primary"
+                                            variant="bordered"
+                                        >
+                                            +
+                                        </Button>
+                                    </div>
+                                    <p className="text-xs text-gray-500 text-center">How many orders of this basket were sold?</p>
                                 </div>
+                                
                                 <div className="p-3 bg-gray-50 rounded-lg">
                                     <p className="text-sm"><strong>Basket:</strong> {basket.name}</p>
                                 </div>

@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Card, Image, Input } from "@heroui/react";
 import { updateProductInBasket } from "../../../../services/baskets";
 import { addSale } from "../../../../services/sales";
-import { useKeyboardHeight } from "../../../../hooks/useKeyboardHeight";
 
 interface SalesModalProps {
     isOpen: boolean;
@@ -22,21 +21,6 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
     const [trackingNumber, setTrackingNumber] = useState("");
     const [orderCount, setOrderCount] = useState(1);
     const [loading, setLoading] = useState(false);
-
-    const { keyboardHeight, isMobileOrTablet } = useKeyboardHeight();
-
-    // Body scroll lock when modal is open on mobile/tablet
-    useEffect(() => {
-        if (isOpen && isMobileOrTablet) {
-            document.body.classList.add('modal-open');
-        } else {
-            document.body.classList.remove('modal-open');
-        }
-        
-        return () => {
-            document.body.classList.remove('modal-open');
-        };
-    }, [isOpen, isMobileOrTablet]);
 
     // Debounce search input
     useEffect(() => {
@@ -123,24 +107,15 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
             }
 
             handleCloseModal();
-            onSaleComplete();
+            
+            // Small delay to let modal close animation complete before refreshing
+            setTimeout(() => {
+                onSaleComplete();
+            }, 300);
         } finally {
             setLoading(false);
         }
     };
-
-    // Calculate modal position and style based on keyboard
-    const isKeyboardOpen = keyboardHeight > 0;
-    const modalPlacement = isMobileOrTablet && isKeyboardOpen ? "top" : "center";
-    
-    // Calculate available space for modal
-    const availableHeight = typeof window !== 'undefined' 
-      ? (isKeyboardOpen ? window.innerHeight - keyboardHeight - 20 : window.innerHeight - 40)
-      : 'auto';
-    
-    const modalClassName = isMobileOrTablet && isKeyboardOpen 
-      ? "modal-keyboard-avoid modal-scrollable" 
-      : (isMobileOrTablet ? "modal-scrollable" : "");
 
     return (
         <Modal 
@@ -149,15 +124,11 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
             size="xl" 
             isDismissable={step === 0} 
             hideCloseButton={false}
-            placement={modalPlacement}
+            placement="center"
+            scrollBehavior="inside"
             classNames={{
-                base: modalClassName,
-                wrapper: isMobileOrTablet ? "overflow-hidden" : "",
+                base: "max-h-[90vh] max-w-[95vw] sm:max-w-xl",
             }}
-            style={isMobileOrTablet && isKeyboardOpen ? {
-                maxHeight: `${availableHeight}px`,
-                marginTop: '10px',
-            } : {}}
         >
             <ModalContent className="modal-content-wrapper">
                 <ModalHeader className="flex flex-col items-center justify-center text-center">
@@ -180,11 +151,11 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                         ))}
                     </div>
                 </ModalHeader>
-                <ModalBody className={`modal-body-scrollable px-6 py-4 ${step === 0 ? 'flex flex-col' : ''}`}>
+                <ModalBody className="px-4 sm:px-6 py-4 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto">
                     {step === 0 && (
-                        <>
-                            {/* Search Input - Fixed at top */}
-                            <div className="mb-4 flex-shrink-0">
+                        <div className="space-y-4">
+                            {/* Search Input */}
+                            <div className="sticky top-0 bg-white z-10 pb-4">
                                 <Input
                                     placeholder="Search baskets..."
                                     label="Search Baskets"
@@ -196,45 +167,42 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                     className="w-full"
                                 />
                             </div>
-                            {/* Scrollable Grid Area */}
-                            <div className="flex-1 overflow-y-auto max-h-[400px] p-2">
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 content-start auto-rows-fr">
-                                    {baskets
-                                        .filter((b: any) =>
-                                            b.name.toLowerCase().includes(searchTerm.toLowerCase())
-                                        )
-                                        .map((b: any) => (
-                                            <Card key={b.id} isPressable onClick={() => { setSelectedBasket(b); nextStep(); }} className={`transition-all overflow-hidden h-full flex flex-col ${selectedBasket?.id === b.id ? 'ring-2 ring-blue-500 scale-105' : ''}`}>
-                                                <Image
-                                                    src="https://images.pexels.com/photos/205961/pexels-photo-205961.jpeg?_gl=1*i2vpd6*_ga*Mjc4NDk0MTguMTc1NDkyMDgwOA..*_ga_8JE65Q40S6*czE3NTQ5MjA4MDgkbzEkZzEkdDE3NTQ5MjA4MjckajQxJGwwJGgw"
-                                                    alt={b.name}
-                                                    className="hidden md:block w-full flex-1 min-h-[120px] object-cover rounded-b-none"
-                                                />
-                                                <div className="flex items-center justify-center text-center font-semibold text-xl md:text-lg lg:text-sm p-3 h-full">{b.name}</div>
-                                            </Card>
-                                        ))}
-                                </div>
-                                {baskets.filter((b: any) => b.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
-                                    <div className="text-center text-gray-500 py-4">No baskets found</div>
-                                )}
+                            {/* Scrollable Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                {baskets
+                                    .filter((b: any) =>
+                                        b.name.toLowerCase().includes(searchTerm.toLowerCase())
+                                    )
+                                    .map((b: any) => (
+                                        <Card key={b.id} isPressable onClick={() => { setSelectedBasket(b); nextStep(); }} className={`transition-all overflow-hidden ${selectedBasket?.id === b.id ? 'ring-2 ring-blue-500 scale-105' : ''}`}>
+                                            <Image
+                                                src="https://images.pexels.com/photos/205961/pexels-photo-205961.jpeg?_gl=1*i2vpd6*_ga*Mjc4NDk0MTguMTc1NDkyMDgwOA..*_ga_8JE65Q40S6*czE3NTQ5MjA4MDgkbzEkZzEkdDE3NTQ5MjA4MjckajQxJGwwJGgw"
+                                                alt={b.name}
+                                                className="hidden md:block w-full h-32 object-cover"
+                                            />
+                                            <div className="p-3 text-center font-semibold">{b.name}</div>
+                                        </Card>
+                                    ))}
                             </div>
-                        </>
+                            {baskets.filter((b: any) => b.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+                                <div className="text-center text-gray-500 py-8">No baskets found</div>
+                            )}
+                        </div>
                     )}
 
                     {step === 1 && (
-                        <div className="w-full">
-                            <div className="w-full space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                                {products.map((p: any) => (
-                                    <div key={p.id} className="bg-gray-50 rounded-lg p-4 relative">
-                                        <div className="flex flex-col items-center gap-3">
-                                            <span className="font-medium text-sm sm:text-base text-center">{p.name}</span>
-                                            
-                                            {/* Quantity controls */}
-                                            <div className="flex items-center gap-3">
+                        <div className="space-y-3">
+                            {products.map((p: any) => (
+                                <div key={p.id} className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                                    <div className="flex flex-col items-center gap-3">
+                                        <span className="font-medium text-sm sm:text-base text-center">{p.name}</span>
+                                        
+                                        {/* Quantity controls */}
+                                        <div className="flex items-center gap-3">
                                                 <Button 
                                                     size="md" 
                                                     onPress={() => setProductCounts(c => ({ ...c, [p.id]: Math.max((c[p.id] || 0) - 1, 0) }))}
-                                                    className="min-w-unit-12 h-12 text-lg font-bold"
+                                                    className="min-w-unit-10 sm:min-w-unit-12 h-10 sm:h-12 text-lg font-bold"
                                                 >
                                                     -
                                                 </Button>
@@ -244,18 +212,18 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                                         label="Quantity"
                                                         value={(productCounts[p.id] || 0).toString()}
                                                         onChange={(e) => setProductCounts(c => ({ ...c, [p.id]: Math.max(Number(e.target.value), 0) }))}
-                                                        className="w-20 text-center flex justify-center"
-                                                        size="md"
+                                                        className="w-16 sm:w-20 text-center flex justify-center"
+                                                        size="sm"
                                                         classNames={{
-                                                            input: "text-lg font-semibold text-center",
-                                                            inputWrapper: "h-12"
+                                                            input: "text-base sm:text-lg font-semibold text-center",
+                                                            inputWrapper: "h-10 sm:h-12"
                                                         }}
                                                     />
                                                 </div>
                                                 <Button 
                                                     size="md" 
                                                     onPress={() => setProductCounts(c => ({ ...c, [p.id]: (c[p.id] || 0) + 1 }))}
-                                                    className="min-w-unit-12 h-12 text-lg font-bold"
+                                                    className="min-w-unit-10 sm:min-w-unit-12 h-10 sm:h-12 text-lg font-bold"
                                                 >
                                                     +
                                                 </Button>
@@ -267,7 +235,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                                     size="sm" 
                                                     variant="bordered"
                                                     onPress={() => setProductCounts(c => ({ ...c, [p.id]: 5 }))}
-                                                    className="px-3 text-xs min-w-unit-12"
+                                                    className="px-2 sm:px-3 text-xs min-w-unit-8 sm:min-w-unit-12"
                                                 >
                                                     5
                                                 </Button>
@@ -275,7 +243,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                                     size="sm" 
                                                     variant="bordered"
                                                     onPress={() => setProductCounts(c => ({ ...c, [p.id]: 10 }))}
-                                                    className="px-3 text-xs min-w-unit-12"
+                                                    className="px-2 sm:px-3 text-xs min-w-unit-8 sm:min-w-unit-12"
                                                 >
                                                     10
                                                 </Button>
@@ -283,7 +251,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                                     size="sm" 
                                                     variant="bordered"
                                                     onPress={() => setProductCounts(c => ({ ...c, [p.id]: 15 }))}
-                                                    className="px-3 text-xs min-w-unit-12"
+                                                    className="px-2 sm:px-3 text-xs min-w-unit-8 sm:min-w-unit-12"
                                                 >
                                                     15
                                                 </Button>
@@ -297,72 +265,96 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                         </div>
                                     </div>
                                 ))}
-                            </div>
                         </div>
                     )}
 
                     {step === 2 && (
-                        <div className="w-full">
-                            <div className="mb-4 font-semibold text-lg text-center">Customer Information</div>
-                            <div className="w-full max-w-md mx-auto space-y-4 mb-6">
-                                <Input
-                                    label="Customer Name"
-                                    placeholder="Enter customer name"
-                                    value={customerName}
-                                    onChange={(e) => setCustomerName(e.target.value)}
-                                    isRequired
-                                />
-                                <Input
-                                    label="Tracking Number"
-                                    placeholder="Enter tracking number"
-                                    value={trackingNumber}
-                                    onChange={(e) => setTrackingNumber(e.target.value)}
-                                    isRequired
-                                />
-                                <Input
-                                    type="number"
-                                    label="Number of Orders"
-                                    placeholder="Enter number of orders"
-                                    value={orderCount.toString()}
-                                    onChange={(e) => setOrderCount(Math.max(1, Number(e.target.value) || 1))}
-                                    min={1}
-                                    isRequired
-                                    description="How many orders of this basket were sold?"
-                                />
+                        <div className="space-y-6">
+                            <div className="text-center">
+                                <h4 className="font-semibold text-lg mb-4">Customer Information</h4>
+                                <div className="max-w-md mx-auto space-y-4">
+                                    <Input
+                                        label="Customer Name"
+                                        placeholder="Enter customer name"
+                                        value={customerName}
+                                        onChange={(e) => setCustomerName(e.target.value)}
+                                        isRequired
+                                    />
+                                    <Input
+                                        label="Tracking Number"
+                                        placeholder="Enter tracking number"
+                                        value={trackingNumber}
+                                        onChange={(e) => setTrackingNumber(e.target.value)}
+                                        isRequired
+                                    />
+                                    
+                                    {/* Number of Orders with +/- buttons */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm text-gray-600 font-medium">Number of Orders</label>
+                                        <div className="flex items-center justify-center gap-3">
+                                            <Button 
+                                                size="md" 
+                                                onPress={() => setOrderCount(Math.max(1, orderCount - 1))}
+                                                isDisabled={orderCount <= 1}
+                                                className="min-w-unit-10 h-10 text-lg font-bold"
+                                                color="default"
+                                                variant="bordered"
+                                            >
+                                                -
+                                            </Button>
+                                            <div className="bg-gray-100 rounded-lg px-4 py-2 min-w-[60px] text-center">
+                                                <span className="text-xl font-bold text-gray-800">{orderCount}</span>
+                                            </div>
+                                            <Button 
+                                                size="md" 
+                                                onPress={() => setOrderCount(orderCount + 1)}
+                                                className="min-w-unit-10 h-10 text-lg font-bold"
+                                                color="primary"
+                                                variant="bordered"
+                                            >
+                                                +
+                                            </Button>
+                                        </div>
+                                        <p className="text-xs text-gray-500 text-center">How many orders of this basket were sold?</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="mb-4 font-semibold text-lg text-center">Order Summary</div>
-                            <div className="w-full max-w-md mx-auto space-y-2 max-h-[200px] overflow-y-auto pr-2">
-                                {products.filter((p: any) => (productCounts[p.id] || 0) > 0).map((p: any) => (
-                                    <div key={p.id} className="flex justify-between items-center py-2 px-4 bg-gray-50 rounded-lg">
-                                        <span className="font-medium">{p.name}</span>
-                                        <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">{productCounts[p.id] || 0} pcs</span>
-                                    </div>
-                                ))}
-                                {/* Total Summary */}
-                                {products.filter((p: any) => (productCounts[p.id] || 0) > 0).length > 0 && (
-                                    <div className="flex justify-between items-center py-3 px-4 bg-blue-50 rounded-lg border-t-2 border-blue-200 mt-4">
-                                        <span className="font-bold text-blue-800">Total Quantity:</span>
-                                        <span className="bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-bold">
-                                            {Object.values(productCounts).reduce((sum, count) => sum + (count || 0), 0)} pcs
-                                        </span>
-                                    </div>
-                                )}
+                            
+                            <div className="text-center">
+                                <h4 className="font-semibold text-lg mb-4">Order Summary</h4>
+                                <div className="max-w-md mx-auto space-y-2 max-h-48 sm:max-h-56 overflow-y-auto border rounded-lg p-3">
+                                    {products.filter((p: any) => (productCounts[p.id] || 0) > 0).map((p: any) => (
+                                        <div key={p.id} className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
+                                            <span className="font-medium text-sm">{p.name}</span>
+                                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">{productCounts[p.id] || 0} pcs</span>
+                                        </div>
+                                    ))}
+                                    {/* Total Summary */}
+                                    {products.filter((p: any) => (productCounts[p.id] || 0) > 0).length > 0 && (
+                                        <div className="flex justify-between items-center py-2 px-3 bg-blue-50 rounded-lg border-t-2 border-blue-200 mt-3 sticky bottom-0">
+                                            <span className="font-bold text-blue-800 text-sm">Total Quantity:</span>
+                                            <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                                                {Object.values(productCounts).reduce((sum, count) => sum + (count || 0), 0)} pcs
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}
                 </ModalBody>
-                <ModalFooter>
-                    {step > 0 && <Button variant="light" onPress={prevStep} className="w-full sm:w-auto text-xl md:text-base">Back</Button>}
-                    {step > 0 && step < 2 && <Button color="primary" onPress={nextStep} className="w-full sm:w-auto text-xl md:text-base">Next</Button>}
+                <ModalFooter className="flex-col sm:flex-row gap-2 sm:gap-4">
+                    {step > 0 && <Button variant="light" onPress={prevStep} className="w-full sm:w-auto text-lg">Back</Button>}
+                    {step > 0 && step < 2 && <Button color="primary" onPress={nextStep} className="w-full sm:w-auto text-lg">Next</Button>}
                     {step === 2 && (
                         <Button
                             color="success"
                             onPress={handleSaveSale}
-                            className="w-full sm:w-auto text-xl md:text-base"
+                            className="w-full sm:w-auto text-lg"
                             isLoading={loading}
                             disabled={loading}
                         >
-                            Save
+                            {loading ? 'Saving...' : 'Save Sale'}
                         </Button>
                     )}
                 </ModalFooter>

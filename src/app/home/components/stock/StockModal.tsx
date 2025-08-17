@@ -1,8 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Card, Input } from "@heroui/react";
 import { updateProductInBasket } from "../../../../services/baskets";
-import { useKeyboardHeight } from "../../../../hooks/useKeyboardHeight";
 
 interface StockModalProps {
     isOpen: boolean;
@@ -17,21 +16,6 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
     const [step, setStep] = useState(0);
     const [action, setAction] = useState<'add' | 'remove' | null>(null);
     const [quantity, setQuantity] = useState(0);
-    
-    const { keyboardHeight, isMobileOrTablet } = useKeyboardHeight();
-
-    // Body scroll lock when modal is open on mobile/tablet
-    useEffect(() => {
-        if (isOpen && isMobileOrTablet) {
-            document.body.classList.add('modal-open');
-        } else {
-            document.body.classList.remove('modal-open');
-        }
-        
-        return () => {
-            document.body.classList.remove('modal-open');
-        };
-    }, [isOpen, isMobileOrTablet]);
 
     const handleCloseModal = () => {
         setStep(0);
@@ -60,7 +44,11 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
 
             await updateProductInBasket(basketId, product.id, { stock: newStock }, 'stock_modal');
             handleCloseModal();
-            onStockUpdated();
+            
+            // Small delay to let modal close animation complete before refreshing
+            setTimeout(() => {
+                onStockUpdated();
+            }, 300);
         } finally {
             setLoading(false);
         }
@@ -68,34 +56,14 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
 
     const prevStep = () => setStep(0);
 
-    // Calculate modal position and style based on keyboard
-    const isKeyboardOpen = keyboardHeight > 0;
-    const modalPlacement = isMobileOrTablet && isKeyboardOpen ? "top" : "center";
-    
-    // Calculate available space for modal
-    const availableHeight = typeof window !== 'undefined' 
-      ? (isKeyboardOpen ? window.innerHeight - keyboardHeight - 20 : window.innerHeight - 40)
-      : 'auto';
-    
-    const modalClassName = isMobileOrTablet && isKeyboardOpen 
-      ? "modal-keyboard-avoid modal-scrollable" 
-      : (isMobileOrTablet ? "modal-scrollable" : "");
-
+    // Simplified modal configuration - no keyboard adjustments
     return (
         <Modal 
             isOpen={isOpen} 
             onClose={handleCloseModal} 
             size="md" 
             isDismissable={step === 0}
-            placement={modalPlacement}
-            classNames={{
-                base: modalClassName,
-                wrapper: isMobileOrTablet ? "overflow-hidden" : "",
-            }}
-            style={isMobileOrTablet && isKeyboardOpen ? {
-                maxHeight: `${availableHeight}px`,
-                marginTop: '10px',
-            } : {}}
+            placement="center"
         >
             <ModalContent className="modal-content-wrapper">
                 <ModalHeader className="flex flex-col items-center justify-center text-center">

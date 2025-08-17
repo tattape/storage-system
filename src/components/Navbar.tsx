@@ -46,7 +46,7 @@ export default function Navbar() {
 
     return (
         <HeroNavbar
-            className="sticky top-0 z-50 bg-white/15 shadow-md backdrop-blur-2xl"
+            className="fixed top-0 left-0 right-0 z-[100] bg-white/60 shadow-lg backdrop-blur-md border-b border-gray-200/50"
             onMenuOpenChange={setIsMenuOpen}
             isMenuOpen={isMenuOpen}
         >

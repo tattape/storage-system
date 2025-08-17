@@ -17,9 +17,6 @@ declare global {
 // Prevent multiple simultaneous 401 handling
 let isHandling401 = false;
 
-// Protected API endpoints that should trigger logout on 401
-const PROTECTED_API_ENDPOINTS = ['/api/user', '/api/sales'];
-
 /**
  * Setup global fetch interceptor to handle 401 responses
  */
@@ -43,8 +40,10 @@ export function setupGlobalErrorHandler(): void {
       url = args[0].href;
     }
     
-    // Check if this is a protected API
-    const isProtectedApi = PROTECTED_API_ENDPOINTS.some(endpoint => url.includes(endpoint));
+    // Check if this is a protected API (any /api/ endpoint except public ones)
+    const isApiCall = url.includes('/api/');
+    const isPublicApi = url.includes('/api/health'); // Add other public APIs here if needed
+    const isProtectedApi = isApiCall && !isPublicApi;
     
     // Handle 401 responses from protected APIs
     if (response.status === 401 && 
@@ -52,7 +51,18 @@ export function setupGlobalErrorHandler(): void {
         isProtectedApi &&
         window.location.pathname !== '/login') {
       
+      console.log('🔒 401 detected, handling unauthorized access for:', url);
+      console.log('Current pathname:', window.location.pathname);
+      console.log('isHandling401:', isHandling401);
+      console.log('isProtectedApi:', isProtectedApi);
       await handleUnauthorized(originalFetch);
+    } else if (response.status === 401) {
+      console.log('🔒 401 detected but not handling:', {
+        url,
+        isHandling401,
+        isProtectedApi,
+        pathname: window.location.pathname
+      });
     }
     
     return response;
@@ -66,6 +76,8 @@ export function setupGlobalErrorHandler(): void {
  */
 async function handleUnauthorized(originalFetch: typeof fetch): Promise<void> {
   isHandling401 = true;
+  
+  console.log('🚪 Handling unauthorized access - clearing auth and redirecting to login');
   
   try {
     // Clear Firebase authentication
@@ -91,6 +103,7 @@ async function handleUnauthorized(originalFetch: typeof fetch): Promise<void> {
     ? `?returnUrl=${encodeURIComponent(currentPath)}` 
     : '';
   
+  console.log('🔄 Redirecting to login:', `/login${returnUrl}`);
   window.location.replace(`/login${returnUrl}`);
 }
 

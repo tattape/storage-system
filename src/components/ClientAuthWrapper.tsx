@@ -24,31 +24,47 @@ export default function ClientAuthWrapper({ children }: ClientAuthWrapperProps) 
         // Skip auth check for public routes
         const publicRoutes = ['/', '/login'];
         if (publicRoutes.includes(pathname)) {
+            console.log('✅ ClientAuthWrapper: Public route, allowing access:', pathname);
             setAuthorized(true);
             setLoading(false);
             return;
         }
 
+        console.log('🔍 ClientAuthWrapper: Checking auth for protected route:', pathname);
+
         const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             if (!firebaseUser) {
                 // No user, redirect to login
+                console.log('🔒 ClientAuthWrapper: No Firebase user, redirecting to login');
                 router.replace('/login');
                 return;
             }
 
+            console.log('✅ ClientAuthWrapper: Firebase user found:', firebaseUser.email);
+
             // Check if this is an owner-only route
             if (pathname.startsWith('/cleanup')) {
+                console.log('🔍 ClientAuthWrapper: Checking owner role for cleanup route');
                 // Get user role from database
-                const user = await getUserByEmail(firebaseUser.email!);
-                
-                if (!user || user.role !== 'owner') {
-                    // Not owner, redirect to dashboard
+                try {
+                    const user = await getUserByEmail(firebaseUser.email!);
+                    
+                    if (!user || user.role !== 'owner') {
+                        // Not owner, redirect to dashboard
+                        console.log('🔒 ClientAuthWrapper: User is not owner, redirecting to dashboard');
+                        router.replace('/dashboard');
+                        return;
+                    }
+                    console.log('✅ ClientAuthWrapper: Owner access granted for cleanup');
+                } catch (error) {
+                    console.error('❌ ClientAuthWrapper: Error checking user role:', error);
                     router.replace('/dashboard');
                     return;
                 }
             }
 
             // User is authenticated and authorized, allow access
+            console.log('✅ ClientAuthWrapper: Access granted for:', pathname);
             setAuthorized(true);
             setLoading(false);
         });
