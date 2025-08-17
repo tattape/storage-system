@@ -160,6 +160,7 @@ body {
   display: flex;
   flex-direction: column;
   max-height: inherit;
+  height: 100%;
 }
 
 .modal-body-scrollable {
@@ -170,6 +171,8 @@ body {
   scroll-behavior: smooth;
   /* Add padding for better UX when keyboard is open */
   padding-bottom: env(keyboard-inset-height, 0px);
+  /* Ensure minimum height for proper flex behavior */
+  min-height: 0;
 }
 
 /* Bottom Navigation Styles */

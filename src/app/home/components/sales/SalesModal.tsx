@@ -137,32 +137,34 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
             placement={modalStyles.position}
             scrollBehavior="inside"
             classNames={{
-                base: `max-h-[90vh] max-w-[95vw] sm:max-w-xl ${modalStyles.className}`,
+                base: `max-h-[85vh] max-w-[95vw] sm:max-w-xl ${modalStyles.className}`,
+                wrapper: "overflow-hidden",
+                backdrop: "bg-black/50",
             }}
             style={modalStyles.styles}
         >
             <ModalContent className="modal-content-wrapper">
-                <ModalHeader className="flex flex-col items-center justify-center text-center">
-                    <h3 className="text-lg font-semibold mb-4">Sales Process</h3>
+                <ModalHeader className="flex-shrink-0 flex flex-col items-center justify-center text-center px-4 py-3">
+                    <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-4">Sales Process</h3>
                     {/* Step Indicator */}
                     <div className="flex items-center justify-center">
                         {["Select Basket", "Choose Quantity", "Confirm"].map((label, idx) => (
                             <div key={label} className="flex items-center">
-                                <div className={`rounded-full w-20 h-8 flex items-center justify-center font-bold text-white transition-all ${step === idx ? 'bg-blue-500 scale-110' : 'bg-gray-300'}`}>{idx + 1}</div>
-                                {idx < 2 && <div className="w-8 h-1 bg-gray-300 mx-2" />}
+                                <div className={`rounded-full w-16 h-6 sm:w-20 sm:h-8 flex items-center justify-center font-bold text-white transition-all text-xs sm:text-sm ${step === idx ? 'bg-blue-500 scale-110' : 'bg-gray-300'}`}>{idx + 1}</div>
+                                {idx < 2 && <div className="w-4 sm:w-8 h-1 bg-gray-300 mx-1 sm:mx-2" />}
                             </div>
                         ))}
                     </div>
-                    <div className="flex items-center justify-center mt-2">
+                    <div className="flex items-center justify-center mt-1 sm:mt-2">
                         {["Basket", "Quantity", "Confirm"].map((label, idx) => (
                             <div key={label} className="flex items-center">
-                                <span className={`text-xs text-center w-20 ${step === idx ? 'text-blue-600 font-semibold' : 'text-gray-400'}`}>{label}</span>
-                                {idx < 2 && <div className="w-8 mx-2" />}
+                                <span className={`text-xs text-center w-16 sm:w-20 ${step === idx ? 'text-blue-600 font-semibold' : 'text-gray-400'}`}>{label}</span>
+                                {idx < 2 && <div className="w-4 sm:w-8 mx-1 sm:mx-2" />}
                             </div>
                         ))}
                     </div>
                 </ModalHeader>
-                <ModalBody className="modal-body-scrollable px-4 sm:px-6 py-4">
+                <ModalBody className="modal-body-scrollable px-3 sm:px-6 py-2 sm:py-4 flex-1 min-h-0">
                     {step === 0 && (
                         <div className="space-y-4">
                             {/* Search Input */}
@@ -280,16 +282,18 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                     )}
 
                     {step === 2 && (
-                        <div className="space-y-6">
-                            <div className="text-center">
-                                <h4 className="font-semibold text-lg mb-4">Customer Information</h4>
-                                <div className="max-w-md mx-auto space-y-4">
+                        <div className="space-y-4 h-full">
+                            {/* Customer Information Section */}
+                            <div className="bg-white border rounded-lg p-4">
+                                <h4 className="font-semibold text-base mb-3 text-center">Customer Information</h4>
+                                <div className="space-y-3">
                                     <Input
                                         label="Customer Name"
                                         placeholder="Enter customer name"
                                         value={customerName}
                                         onChange={(e) => setCustomerName(e.target.value)}
                                         isRequired
+                                        size="sm"
                                     />
                                     <Input
                                         label="Tracking Number"
@@ -297,54 +301,55 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                         value={trackingNumber}
                                         onChange={(e) => setTrackingNumber(e.target.value)}
                                         isRequired
+                                        size="sm"
                                     />
                                     
-                                    {/* Number of Orders with +/- buttons */}
+                                    {/* Number of Orders - Compact */}
                                     <div className="space-y-2">
                                         <label className="text-sm text-gray-600 font-medium">Number of Orders</label>
-                                        <div className="flex items-center justify-center gap-3">
+                                        <div className="flex items-center justify-center gap-2">
                                             <Button 
-                                                size="md" 
+                                                size="sm" 
                                                 onPress={() => setOrderCount(Math.max(1, orderCount - 1))}
                                                 isDisabled={orderCount <= 1}
-                                                className="min-w-unit-10 h-10 text-lg font-bold"
+                                                className="min-w-unit-8 h-8 text-base font-bold"
                                                 color="default"
                                                 variant="bordered"
                                             >
                                                 -
                                             </Button>
-                                            <div className="bg-gray-100 rounded-lg px-4 py-2 min-w-[60px] text-center">
-                                                <span className="text-xl font-bold text-gray-800">{orderCount}</span>
+                                            <div className="bg-gray-100 rounded-lg px-3 py-1 min-w-[50px] text-center">
+                                                <span className="text-lg font-bold text-gray-800">{orderCount}</span>
                                             </div>
                                             <Button 
-                                                size="md" 
+                                                size="sm" 
                                                 onPress={() => setOrderCount(orderCount + 1)}
-                                                className="min-w-unit-10 h-10 text-lg font-bold"
+                                                className="min-w-unit-8 h-8 text-base font-bold"
                                                 color="primary"
                                                 variant="bordered"
                                             >
                                                 +
                                             </Button>
                                         </div>
-                                        <p className="text-xs text-gray-500 text-center">How many orders of this basket were sold?</p>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div className="text-center">
-                                <h4 className="font-semibold text-lg mb-4">Order Summary</h4>
-                                <div className="max-w-md mx-auto space-y-2 max-h-48 sm:max-h-56 overflow-y-auto border rounded-lg p-3">
+                            {/* Order Summary Section - Scrollable */}
+                            <div className="bg-white border rounded-lg p-4 flex-1 min-h-0">
+                                <h4 className="font-semibold text-base mb-3 text-center">Order Summary</h4>
+                                <div className="max-h-32 overflow-y-auto border rounded-lg p-2">
                                     {products.filter((p: any) => (productCounts[p.id] || 0) > 0).map((p: any) => (
-                                        <div key={p.id} className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
-                                            <span className="font-medium text-sm">{p.name}</span>
-                                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">{productCounts[p.id] || 0} pcs</span>
+                                        <div key={p.id} className="flex justify-between items-center py-1.5 px-2 bg-gray-50 rounded mb-1 last:mb-0">
+                                            <span className="font-medium text-xs sm:text-sm truncate flex-1 mr-2">{p.name}</span>
+                                            <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs font-semibold flex-shrink-0">{productCounts[p.id] || 0} pcs</span>
                                         </div>
                                     ))}
                                     {/* Total Summary */}
                                     {products.filter((p: any) => (productCounts[p.id] || 0) > 0).length > 0 && (
-                                        <div className="flex justify-between items-center py-2 px-3 bg-blue-50 rounded-lg border-t-2 border-blue-200 mt-3 sticky bottom-0">
-                                            <span className="font-bold text-blue-800 text-sm">Total Quantity:</span>
-                                            <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                                        <div className="flex justify-between items-center py-2 px-2 bg-blue-50 rounded border-t-2 border-blue-200 mt-2 sticky bottom-0">
+                                            <span className="font-bold text-blue-800 text-sm">Total:</span>
+                                            <span className="bg-blue-500 text-white px-2 py-1 rounded-full text-sm font-bold">
                                                 {Object.values(productCounts).reduce((sum, count) => sum + (count || 0), 0)} pcs
                                             </span>
                                         </div>
@@ -354,14 +359,15 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                         </div>
                     )}
                 </ModalBody>
-                <ModalFooter className="flex-col sm:flex-row gap-2 sm:gap-4">
-                    {step > 0 && <Button variant="light" onPress={prevStep} className="w-full sm:w-auto text-lg">Back</Button>}
-                    {step > 0 && step < 2 && <Button color="primary" onPress={nextStep} className="w-full sm:w-auto text-lg">Next</Button>}
+                <ModalFooter className="flex-shrink-0 flex-col sm:flex-row gap-2 p-3 sm:p-4">
+                    {step > 0 && <Button variant="light" onPress={prevStep} className="w-full sm:w-auto text-base" size="sm">Back</Button>}
+                    {step > 0 && step < 2 && <Button color="primary" onPress={nextStep} className="w-full sm:w-auto text-base" size="sm">Next</Button>}
                     {step === 2 && (
                         <Button
                             color="success"
                             onPress={handleSaveSale}
-                            className="w-full sm:w-auto text-lg"
+                            className="w-full sm:w-auto text-base"
+                            size="sm"
                             isLoading={loading}
                             disabled={loading}
                         >
