@@ -186,13 +186,29 @@ body {
   scroll-behavior: smooth;
   min-height: 0;
   position: relative;
+  /* เพิ่ม padding ด้านล่างเสมอ เพื่อให้ input ด้านล่างสามารถ scroll ขึ้นมาได้ */
+  padding-bottom: 150px !important;
 }
 
-/* Keyboard-aware modal adjustments - เฉพาะเมื่อ keyboard เปิด */
-.keyboard-open .modal-body-scrollable {
-  /* เพิ่ม scroll space เฉพาะเมื่อ keyboard เปิด */
-  padding-bottom: 50px !important;
-  scroll-padding-bottom: 100px !important;
+/* Keyboard-aware modal adjustments - เฉพาะ mobile/tablet และเมื่อ keyboard เปิด */
+@media (max-width: 1024px) {
+  .keyboard-open .modal-body-scrollable {
+    /* เพิ่ม scroll space เฉพาะเมื่อ keyboard เปิด */
+    padding-bottom: 400px !important;
+    scroll-padding-bottom: 400px !important;
+  }
+  
+  /* เพิ่ม margin สำหรับ section สุดท้ายใน modal */
+  .keyboard-open .modal-body-scrollable > div:last-child {
+    margin-bottom: 300px !important;
+  }
+  
+  /* เมื่อมี input focus ใน modal และ keyboard เปิด */
+  .keyboard-open .modal-body-scrollable input:focus,
+  .keyboard-open .modal-body-scrollable textarea:focus,
+  .keyboard-open .modal-body-scrollable select:focus {
+    scroll-margin-bottom: 350px !important;
+  }
 }
 
 /* Bottom Navigation Styles */

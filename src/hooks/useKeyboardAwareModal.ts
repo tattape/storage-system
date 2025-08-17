@@ -13,6 +13,14 @@ export function useKeyboardAwareModal({ isOpen }: KeyboardAwareModalOptions) {
   useEffect(() => {
     if (!isOpen) return;
 
+    // ตรวจสอบว่าเป็น mobile/tablet หรือไม่
+    const isMobileOrTablet = typeof window !== 'undefined' && 
+      (window.innerWidth <= 1024 || 'ontouchstart' in window);
+    
+    if (!isMobileOrTablet) {
+      return; // ถ้าไม่ใช่ mobile/tablet ไม่ต้องทำอะไร
+    }
+
     const initialViewportHeight = window.visualViewport?.height || window.innerHeight;
 
     const handleViewportChange = () => {
@@ -25,16 +33,11 @@ export function useKeyboardAwareModal({ isOpen }: KeyboardAwareModalOptions) {
       setKeyboardHeight(keyboardIsOpen ? heightDifference : 0);
       setIsKeyboardOpen(keyboardIsOpen);
       
-      // เพิ่ม/ลบ class สำหรับ CSS styling เฉพาะเมื่อ keyboard เปิด/ปิด
+      // เพิ่ม/ลบ class เฉพาะเมื่อ keyboard เปิด/ปิด
       if (keyboardIsOpen) {
         document.body.classList.add('keyboard-open');
-        // เพิ่ม scroll space เฉพาะเมื่อ keyboard เปิด
-        const extraSpace = heightDifference + 50; // keyboard height + พื้นที่เพิ่มเติม 50px
-        document.body.style.paddingBottom = `${extraSpace}px`;
       } else {
         document.body.classList.remove('keyboard-open');
-        // ลบ padding เมื่อ keyboard ปิด
-        document.body.style.paddingBottom = '';
       }
     };
 
@@ -53,22 +56,37 @@ export function useKeyboardAwareModal({ isOpen }: KeyboardAwareModalOptions) {
         window.removeEventListener('resize', handleViewportChange);
       }
       
-      // Clean up body padding when component unmounts
+      // Clean up when component unmounts
       if (typeof document !== 'undefined') {
-        document.body.style.paddingBottom = '';
         document.body.classList.remove('keyboard-open');
       }
     };
-  }, [isOpen, isKeyboardOpen, keyboardHeight]);
+  }, [isOpen]);
 
   // คำนวณ modal position และ styling
   const getModalStyles = () => {
-    // ไม่ส่ง styles ใดๆ กลับไป ให้ modal ใช้ขนาดปกติ 90vh
-    // แค่ใช้ body padding เพื่อเพิ่ม scroll space เมื่อ keyboard เปิด
+    if (!isKeyboardOpen || keyboardHeight === 0) {
+      // ถ้าไม่มี keyboard ให้ modal อยู่ตรงกลาง
+      return {
+        position: 'center' as const,
+        styles: {},
+        className: ''
+      };
+    }
+
+    // เมื่อมี keyboard ให้ปรับ modal ให้อยู่เหนือ keyboard
+    const availableHeight = window.visualViewport?.height || window.innerHeight;
+    const modalHeight = Math.min(availableHeight * 0.8, 600); // ความสูงสูงสุด 80% ของหน้าจอที่เหลือ
+    const topOffset = Math.max(20, (availableHeight - modalHeight) / 2);
+
     return {
-      position: 'center' as const,
-      styles: {}, // ไม่มี style เพิ่มเติม
-      className: '' // ไม่มี class เพิ่มเติม
+      position: 'top' as const,
+      styles: {
+        transform: `translateY(${topOffset}px)`,
+        maxHeight: `${modalHeight}px`,
+        height: 'auto'
+      },
+      className: 'keyboard-aware-modal'
     };
   };
 

@@ -132,8 +132,9 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
             hideCloseButton={false}
             placement={modalStyles.position}
             scrollBehavior="inside"
+            style={modalStyles.styles}
             classNames={{
-                base: `max-h-[90vh] max-w-[95vw] sm:max-w-xl`,
+                base: `max-h-[90vh] max-w-[95vw] sm:max-w-xl ${modalStyles.className}`,
                 wrapper: "overflow-hidden",
                 backdrop: "bg-black/50",
             }}

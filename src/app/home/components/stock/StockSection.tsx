@@ -241,8 +241,9 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                             size="md"
                             placement={basketModalStyles.position}
                             scrollBehavior="inside"
+                            style={basketModalStyles.styles}
                             classNames={{
-                                base: `max-h-[90vh] max-w-[95vw] sm:max-w-md`,
+                                base: `max-h-[90vh] max-w-[95vw] sm:max-w-md ${basketModalStyles.className}`,
                             }}
                         >
                             <ModalContent className="modal-content-wrapper">
@@ -290,8 +291,9 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                 size="md"
                 isDismissable={false}
                 placement={basketModalStyles.position}
+                style={basketModalStyles.styles}
                 classNames={{
-                    base: "",
+                    base: basketModalStyles.className,
                     wrapper: isMobileOrTablet ? "overflow-hidden" : "",
                 }}
             >
