@@ -130,38 +130,18 @@ body {
     padding-bottom: 20px !important; /* Extra padding at bottom for easier scrolling */
   }
 
-  /* Make sure inputs are accessible when focused */
+  /* Make sure inputs are accessible when focused - simplified */
   .keyboard-aware-modal input:focus,
   .keyboard-aware-modal textarea:focus,
-  .keyboard-aware-modal select:focus,
-  .keyboard-aware-modal-scroll input:focus,
-  .keyboard-aware-modal-scroll textarea:focus,
-  .keyboard-aware-modal-scroll select:focus {
-    scroll-margin-top: 100px !important;
-    scroll-margin-bottom: 200px !important; /* Increased bottom margin for keyboard space */
-  }
-
-  /* Additional support for all inputs in modal */
-  .modal-body-scrollable input:focus,
-  .modal-body-scrollable textarea:focus,
-  .modal-body-scrollable select:focus {
-    scroll-margin-top: 80px !important;
-    scroll-margin-bottom: 180px !important;
-  }
-
-  /* Force scroll for any input focus - fallback */
-  input:focus,
-  textarea:focus,
-  select:focus {
-    scroll-margin-top: 60px !important;
+  .keyboard-aware-modal select:focus {
     scroll-margin-bottom: 150px !important;
   }
 
-  /* Extra padding for modal containers when inputs are focused */
-  .modal-body-scrollable:has(input:focus),
-  .modal-body-scrollable:has(textarea:focus),
-  .modal-body-scrollable:has(select:focus) {
-    scroll-padding-bottom: 250px !important;
+  /* Additional support for all inputs in modal - simplified */
+  .modal-body-scrollable input:focus,
+  .modal-body-scrollable textarea:focus,
+  .modal-body-scrollable select:focus {
+    scroll-margin-bottom: 120px !important;
   }
 
   /* Smoother transitions for mobile */
@@ -203,44 +183,16 @@ body {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  /* Improved scrolling for mobile keyboards */
   scroll-behavior: smooth;
-  /* Add padding for better UX when keyboard is open */
-  padding-bottom: env(keyboard-inset-height, 0px);
-  /* Ensure minimum height for proper flex behavior */
   min-height: 0;
-  /* Add extra padding bottom for keyboard space */
-  scroll-padding-bottom: 300px !important;
-  /* Ensure scrollable container can handle all inputs */
   position: relative;
 }
 
-/* Enhanced input focus styles for keyboard visibility */
-.modal-body-scrollable input:focus,
-.modal-body-scrollable textarea:focus,
-.modal-body-scrollable select:focus {
-  scroll-margin-top: 60px !important;
-  scroll-margin-bottom: 250px !important;
-  /* Add temporary highlighting to see where focus is */
-  outline: 2px solid #0066ff !important;
-  outline-offset: 2px !important;
-}
-
-/* Force smooth scrolling for all modal interactions */
-.modal-body-scrollable * {
-  scroll-behavior: smooth !important;
-}
-
-/* Keyboard-aware modal adjustments */
+/* Keyboard-aware modal adjustments - เฉพาะเมื่อ keyboard เปิด */
 .keyboard-open .modal-body-scrollable {
-  /* Additional scroll space when keyboard is detected */
-  padding-bottom: 400px !important;
-  scroll-padding-bottom: 400px !important;
-}
-
-/* Bottom section padding for inputs at the bottom */
-.modal-body-scrollable > div:last-child {
-  padding-bottom: 200px !important;
+  /* เพิ่ม scroll space เฉพาะเมื่อ keyboard เปิด */
+  padding-bottom: 50px !important;
+  scroll-padding-bottom: 100px !important;
 }
 
 /* Bottom Navigation Styles */
