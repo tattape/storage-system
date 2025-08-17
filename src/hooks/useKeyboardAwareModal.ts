@@ -37,14 +37,38 @@ export function useKeyboardAwareModal({ isOpen, isMobile = false }: KeyboardAwar
       const target = event.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
         setTimeout(() => {
-          target.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center',
-            inline: 'nearest'
-          });
+          // Scroll with extra bottom offset to ensure input is well above keyboard
+          const rect = target.getBoundingClientRect();
+          const windowHeight = window.innerHeight;
+          const keyboardTop = windowHeight - keyboardHeight;
+          
+          // If input is below keyboard, scroll it to safe position
+          if (rect.bottom > keyboardTop - 100) { // 100px buffer above keyboard
+            target.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'center',
+              inline: 'nearest'
+            });
+          }
         }, 300); // รอให้ keyboard animation เสร็จก่อน
       }
     };
+
+    // Body padding management for extra scroll space
+    const manageBodyPadding = () => {
+      if (typeof window === 'undefined') return;
+      
+      if (isKeyboardOpen && keyboardHeight > 0) {
+        // Add extra scroll space at bottom when keyboard is open
+        document.body.style.paddingBottom = `${keyboardHeight + 50}px`;
+      } else {
+        // Remove extra padding when keyboard is closed
+        document.body.style.paddingBottom = '';
+      }
+    };
+
+    // Apply body padding management
+    manageBodyPadding();
 
     // ใช้ visualViewport API สำหรับ mobile keyboard detection
     if (window.visualViewport) {
@@ -64,8 +88,13 @@ export function useKeyboardAwareModal({ isOpen, isMobile = false }: KeyboardAwar
         window.removeEventListener('resize', handleViewportChange);
       }
       document.removeEventListener('focusin', handleInputFocus);
+      
+      // Clean up body padding when component unmounts
+      if (typeof document !== 'undefined') {
+        document.body.style.paddingBottom = '';
+      }
     };
-  }, [isOpen, isMobile, isKeyboardOpen]);
+  }, [isOpen, isMobile, isKeyboardOpen, keyboardHeight]);
 
   // คำนวณ modal position และ styling
   const getModalStyles = () => {
@@ -77,18 +106,14 @@ export function useKeyboardAwareModal({ isOpen, isMobile = false }: KeyboardAwar
       };
     }
 
-    // เมื่อแป้นพิมพ์เปิด ให้ modal อยู่ด้านบนและมี scroll space เพียงพอ
-    const safeAreaTop = 20; // พื้นที่ปลอดภัยด้านบน
-    const availableHeight = viewportHeight - safeAreaTop * 2; // ความสูงที่ใช้ได้
-    
+    // เมื่อแป้นพิมพ์เปิด ให้ modal อยู่ตำแหน่งเดิม (center) แต่เพิ่ม scroll space
+    // โดยเพิ่ม padding-bottom เท่ากับความสูง keyboard เพื่อให้ scroll ได้มากขึ้น
     return {
-      position: 'top' as const,
+      position: 'center' as const,
       styles: {
-        marginTop: `${safeAreaTop}px`,
-        maxHeight: `${availableHeight}px`,
-        minHeight: `${Math.min(availableHeight, 300)}px`, // ความสูงขั้นต่ำ
+        paddingBottom: `${keyboardHeight}px`, // เพิ่ม scroll space
       },
-      className: 'keyboard-aware-modal'
+      className: 'keyboard-aware-modal-scroll'
     };
   };
 

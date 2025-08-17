@@ -107,9 +107,19 @@ body {
     /* Prevents zoom on focus */
   }
 
-  /* Keyboard aware modal */
+  /* Keyboard aware modal - original version */
   .keyboard-aware-modal {
     transition: all 0.3s ease !important;
+  }
+
+  /* Keyboard aware modal with scroll enhancement - no position change */
+  .keyboard-aware-modal-scroll {
+    transition: padding-bottom 0.3s ease !important;
+  }
+
+  /* Enhanced scrolling for modal when keyboard is open */
+  .keyboard-aware-modal-scroll .modal-body-scrollable {
+    scroll-padding-bottom: 150px !important; /* Extra scroll space at bottom */
   }
 
   /* Ensure modal body is fully scrollable when keyboard is open */
@@ -123,9 +133,12 @@ body {
   /* Make sure inputs are accessible when focused */
   .keyboard-aware-modal input:focus,
   .keyboard-aware-modal textarea:focus,
-  .keyboard-aware-modal select:focus {
+  .keyboard-aware-modal select:focus,
+  .keyboard-aware-modal-scroll input:focus,
+  .keyboard-aware-modal-scroll textarea:focus,
+  .keyboard-aware-modal-scroll select:focus {
     scroll-margin-top: 100px !important;
-    scroll-margin-bottom: 100px !important;
+    scroll-margin-bottom: 150px !important; /* Increased bottom margin for keyboard space */
   }
 
   /* Smoother transitions for mobile */

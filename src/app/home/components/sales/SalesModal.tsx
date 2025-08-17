@@ -137,7 +137,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
             placement={modalStyles.position}
             scrollBehavior="inside"
             classNames={{
-                base: `max-h-[85vh] max-w-[95vw] sm:max-w-xl ${modalStyles.className}`,
+                base: `max-h-[90vh] max-w-[95vw] sm:max-w-xl ${modalStyles.className}`,
                 wrapper: "overflow-hidden",
                 backdrop: "bg-black/50",
             }}
@@ -338,7 +338,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                             {/* Order Summary Section - Scrollable */}
                             <div className="bg-white border rounded-lg p-4 flex-1 min-h-0">
                                 <h4 className="font-semibold text-base mb-3 text-center">Order Summary</h4>
-                                <div className="max-h-32 overflow-y-auto border rounded-lg p-2">
+                                <div className="max-h-40 sm:max-h-48 md:max-h-32 overflow-y-auto border rounded-lg p-2">
                                     {products.filter((p: any) => (productCounts[p.id] || 0) > 0).map((p: any) => (
                                         <div key={p.id} className="flex justify-between items-center py-1.5 px-2 bg-gray-50 rounded mb-1 last:mb-0">
                                             <span className="font-medium text-xs sm:text-sm truncate flex-1 mr-2">{p.name}</span>
