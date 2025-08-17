@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Card, Image, Input } from "@heroui/react";
 import { updateProductInBasket } from "../../../../services/baskets";
 import { addSale } from "../../../../services/sales";
+import { useKeyboardAwareModal } from "../../../../hooks/useKeyboardAwareModal";
 
 interface SalesModalProps {
     isOpen: boolean;
@@ -21,6 +22,15 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
     const [trackingNumber, setTrackingNumber] = useState("");
     const [orderCount, setOrderCount] = useState(1);
     const [loading, setLoading] = useState(false);
+
+    // Detect mobile/tablet
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 1024;
+    
+    // Keyboard aware modal
+    const { modalStyles } = useKeyboardAwareModal({ 
+        isOpen, 
+        isMobile 
+    });
 
     // Debounce search input
     useEffect(() => {
@@ -124,11 +134,12 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
             size="xl" 
             isDismissable={step === 0} 
             hideCloseButton={false}
-            placement="center"
+            placement={modalStyles.position}
             scrollBehavior="inside"
             classNames={{
-                base: "max-h-[90vh] max-w-[95vw] sm:max-w-xl",
+                base: `max-h-[90vh] max-w-[95vw] sm:max-w-xl ${modalStyles.className}`,
             }}
+            style={modalStyles.styles}
         >
             <ModalContent className="modal-content-wrapper">
                 <ModalHeader className="flex flex-col items-center justify-center text-center">

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Input } from "@heroui/react";
 import { updateProductInBasket } from "../../../../services/baskets";
+import { useKeyboardAwareModal } from "../../../../hooks/useKeyboardAwareModal";
 
 interface EditProductModalProps {
     isOpen: boolean;
@@ -17,6 +18,15 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
         minStock: 0, 
         price: 0, 
         packSize: 1 
+    });
+
+    // Detect mobile/tablet
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 1024;
+    
+    // Keyboard aware modal
+    const { modalStyles } = useKeyboardAwareModal({ 
+        isOpen, 
+        isMobile 
     });
 
     useEffect(() => {
@@ -67,7 +77,12 @@ export default function EditProductModal({ isOpen, onClose, basketId, product, o
             onClose={handleCloseModal} 
             size="md"
             isDismissable={false}
-            placement="center"
+            placement={modalStyles.position}
+            scrollBehavior="inside"
+            classNames={{
+                base: `max-h-[90vh] max-w-[95vw] sm:max-w-md ${modalStyles.className}`,
+            }}
+            style={modalStyles.styles}
         >
             <ModalContent className="modal-content-wrapper">
                 <ModalHeader>Edit Product</ModalHeader>

@@ -7,7 +7,8 @@ import { PencilIcon, TrashIcon, PlusIcon } from "../../../../components/icons";
 import StockTable from "./StockTable";
 import EditProductModal from "../shared/EditProductModal";
 import { useAuth } from "../../../../hooks/useAuth";
-import { useKeyboardHeight } from "../../../../hooks/useKeyboardHeight";
+import { useIsMobileOrTablet } from "../../../../hooks/useIsMobileOrTablet";
+import { useKeyboardAwareModal } from "../../../../hooks/useKeyboardAwareModal";
 
 export default function StockSection({ baskets, refreshBaskets }: { baskets: any[]; refreshBaskets: () => void }) {
     const [loadingSaveBasket, setLoadingSaveBasket] = useState(false);
@@ -15,12 +16,18 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
     // Authentication hook
     const { isOwner, isEditor, loading: authLoading } = useAuth();
 
-    // Keyboard height detection
-    const { keyboardHeight, isMobileOrTablet } = useKeyboardHeight();
+    // Mobile detection
+    const isMobileOrTablet = useIsMobileOrTablet();
 
     // All hooks at the top
     const [expanded, setExpanded] = useState<string | null>(null);
     const [modal, setModal] = useState<null | 'basket' | 'editBasketName'>(null);
+
+    // Keyboard aware modal for basket creation/editing
+    const { modalStyles: basketModalStyles } = useKeyboardAwareModal({ 
+        isOpen: modal === 'basket' || modal === 'editBasketName', 
+        isMobile: isMobileOrTablet 
+    });
     const [selectedBasket, setSelectedBasket] = useState<any>(null);
     const [selectedProduct, setSelectedProduct] = useState<any>(null);
     const [basketName, setBasketName] = useState("");
@@ -142,19 +149,6 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
     };
     const handleDeleteProduct = async (basket: any, product: any) => { if (!window.confirm(`Delete product "${product.name}"?`)) return; await deleteProductFromBasket(basket.id, product.id); refreshBaskets(); };
 
-    // Calculate modal position and style based on keyboard
-    const isKeyboardOpen = keyboardHeight > 0;
-    const modalPlacement = isMobileOrTablet && isKeyboardOpen ? "top" : "center";
-
-    // Calculate available space for modal
-    const availableHeight = typeof window !== 'undefined'
-        ? (isKeyboardOpen ? window.innerHeight - keyboardHeight - 20 : window.innerHeight - 40)
-        : 'auto';
-
-    const modalClassName = isMobileOrTablet && isKeyboardOpen
-        ? "modal-keyboard-avoid modal-scrollable"
-        : (isMobileOrTablet ? "modal-scrollable" : "");
-
     return (
         <div className="mb-8 w-full max-w-3xl mx-auto px-2 sm:px-4">
             <h2 className="text-lg sm:text-xl font-bold text-gray-900">Stock Overview</h2>
@@ -246,15 +240,12 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                             isOpen={modal === 'editBasketName'}
                             onClose={() => setModal(null)}
                             size="md"
-                            placement={modalPlacement}
+                            placement={basketModalStyles.position}
+                            scrollBehavior="inside"
                             classNames={{
-                                base: modalClassName,
-                                wrapper: isMobileOrTablet ? "overflow-hidden" : "",
+                                base: `max-h-[90vh] max-w-[95vw] sm:max-w-md ${basketModalStyles.className}`,
                             }}
-                            style={isMobileOrTablet && isKeyboardOpen ? {
-                                maxHeight: `${availableHeight}px`,
-                                marginTop: '10px',
-                            } : {}}
+                            style={basketModalStyles.styles}
                         >
                             <ModalContent className="modal-content-wrapper">
                                 <ModalHeader>Edit Basket</ModalHeader>
@@ -300,15 +291,12 @@ export default function StockSection({ baskets, refreshBaskets }: { baskets: any
                 onClose={() => setModal(null)}
                 size="md"
                 isDismissable={false}
-                placement={modalPlacement}
+                placement={basketModalStyles.position}
                 classNames={{
-                    base: modalClassName,
+                    base: basketModalStyles.className,
                     wrapper: isMobileOrTablet ? "overflow-hidden" : "",
                 }}
-                style={isMobileOrTablet && isKeyboardOpen ? {
-                    maxHeight: `${availableHeight}px`,
-                    marginTop: '10px',
-                } : {}}
+                style={basketModalStyles.styles}
             >
                 <ModalContent className="modal-content-wrapper">
                     <ModalHeader>Add New Basket</ModalHeader>

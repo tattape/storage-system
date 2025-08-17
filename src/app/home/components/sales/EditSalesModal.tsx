@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Input } from "@heroui/react";
 import { updateProductInBasket } from "../../../../services/baskets";
 import { addSale, deleteSale } from "../../../../services/sales";
+import { useKeyboardAwareModal } from "../../../../hooks/useKeyboardAwareModal";
 
 interface EditSalesModalProps {
     isOpen: boolean;
@@ -18,6 +19,15 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
     const [trackingNumber, setTrackingNumber] = useState<string>("");
     const [orderCount, setOrderCount] = useState<number>(1);
     const [loading, setLoading] = useState(false);
+
+    // Detect mobile/tablet
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 1024;
+    
+    // Keyboard aware modal
+    const { modalStyles } = useKeyboardAwareModal({ 
+        isOpen, 
+        isMobile 
+    });
 
     useEffect(() => {
         if (selectedSale && isOpen) {
@@ -131,10 +141,11 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
             size="lg" 
             scrollBehavior="inside"
             isDismissable={false}
-            placement="center"
+            placement={modalStyles.position}
             classNames={{
-                base: "max-h-[90vh] max-w-[95vw] sm:max-w-lg",
+                base: `max-h-[90vh] max-w-[95vw] sm:max-w-lg ${modalStyles.className}`,
             }}
+            style={modalStyles.styles}
         >
             <ModalContent>
                 <ModalHeader>Edit Sale (Basket)</ModalHeader>

@@ -114,6 +114,11 @@ body {
     overflow-y: auto !important;
   }
 
+  /* Keyboard aware modal */
+  .keyboard-aware-modal {
+    transition: all 0.3s ease !important;
+  }
+
   /* Smoother transitions for mobile */
   [data-slot="base"] {
     transition: all 0.3s ease !important;

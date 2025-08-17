@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Card, Input } from "@heroui/react";
 import { updateProductInBasket } from "../../../../services/baskets";
+import { useKeyboardAwareModal } from "../../../../hooks/useKeyboardAwareModal";
 
 interface StockModalProps {
     isOpen: boolean;
@@ -16,6 +17,15 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
     const [step, setStep] = useState(0);
     const [action, setAction] = useState<'add' | 'remove' | null>(null);
     const [quantity, setQuantity] = useState(0);
+
+    // Detect mobile/tablet
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 1024;
+    
+    // Keyboard aware modal
+    const { modalStyles } = useKeyboardAwareModal({ 
+        isOpen, 
+        isMobile 
+    });
 
     const handleCloseModal = () => {
         setStep(0);
@@ -63,7 +73,12 @@ export default function StockModal({ isOpen, onClose, basketId, product, onStock
             onClose={handleCloseModal} 
             size="md" 
             isDismissable={step === 0}
-            placement="center"
+            placement={modalStyles.position}
+            scrollBehavior="inside"
+            classNames={{
+                base: `max-h-[90vh] max-w-[95vw] sm:max-w-md ${modalStyles.className}`,
+            }}
+            style={modalStyles.styles}
         >
             <ModalContent className="modal-content-wrapper">
                 <ModalHeader className="flex flex-col items-center justify-center text-center">
