@@ -107,13 +107,6 @@ body {
     /* Prevents zoom on focus */
   }
 
-  /* Modal keyboard avoidance */
-  .modal-keyboard-avoid {
-    position: fixed !important;
-    max-height: calc(100vh - 20px) !important;
-    overflow-y: auto !important;
-  }
-
   /* Keyboard aware modal */
   .keyboard-aware-modal {
     transition: all 0.3s ease !important;
@@ -134,21 +127,6 @@ body {
     position: fixed !important;
     width: 100% !important;
     height: 100% !important;
-  }
-
-  /* iPad modal keyboard avoidance */
-  .modal-keyboard-avoid {
-    position: fixed !important;
-    top: 10px !important;
-    max-height: calc(100vh - 20px) !important;
-    overflow-y: auto !important;
-    transform: none !important;
-  }
-
-  /* Ensure modal content is scrollable on iPad */
-  .modal-scrollable {
-    max-height: calc(100vh - 40px) !important;
-    overflow-y: auto !important;
   }
 
   /* iPad input optimization */
