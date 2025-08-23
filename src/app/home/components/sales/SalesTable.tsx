@@ -1,6 +1,7 @@
 "use client";
 import { useState, useMemo, useEffect, useCallback } from "react";
-import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownMenu, DropdownItem, DropdownTrigger, Pagination, Input, Button, useDisclosure } from "@heroui/react";
+import { Html5Qrcode } from "html5-qrcode";
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Dropdown, DropdownMenu, DropdownItem, DropdownTrigger, Pagination, Input, Button, useDisclosure, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
 import { updateProductInBasket } from "../../../../services/baskets";
 import { deleteSale } from "../../../../services/sales";
 import SalesModal from "./SalesModal";
@@ -23,6 +24,9 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [filterValue, setFilterValue] = useState("");
     const [searchInput, setSearchInput] = useState("");
+    // QR Scan modal state for search input
+    const [qrScanOpen, setQrScanOpen] = useState(false);
+    const [qrScanError, setQrScanError] = useState("");
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [selectedSale, setSelectedSale] = useState<any>(null);
@@ -44,8 +48,8 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
 
         if (hasSearchFilter) {
             filteredSales = filteredSales.filter((sale) =>
-                sale.customerName?.toLowerCase().includes(filterValue.toLowerCase()) ||
                 sale.trackingNumber?.toLowerCase().includes(filterValue.toLowerCase()) ||
+                filterValue.toLowerCase().includes(sale.trackingNumber?.toLowerCase()) ||
                 sale.basketName?.toLowerCase().includes(filterValue.toLowerCase()) ||
                 sale.products?.some((p: any) =>
                     p.productName?.toLowerCase().includes(filterValue.toLowerCase())
@@ -93,10 +97,10 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
 
     const handleDeleteSale = async (sale: any) => {
         if (!window.confirm('Delete this sale?')) return;
-        
+
         try {
             const basket = baskets.find((b: any) => b.id === sale.basketId);
-            
+
             // ถ้าหาตะกร้าเจอ ให้คืน stock ก่อน
             if (basket) {
                 // Return stock
@@ -112,10 +116,10 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                 console.warn(`Basket ${sale.basketId} not found, but will proceed to delete sale`);
                 window.alert('Warning: Associated basket not found. Stock cannot be returned, but sale will be deleted.');
             }
-            
+
             // ลบ sale ในทุกกรณี (ไม่ว่าจะหาตะกร้าเจอหรือไม่)
             await deleteSale(sale.id);
-            
+
             setRowMenu(null);
             onSaleComplete();
         } catch (error) {
@@ -128,18 +132,32 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
         return (
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between gap-3 items-end">
-                    <Input
-                        isClearable
-                        className="w-full sm:max-w-[44%]"
-                        placeholder="Search by customer, tracking, basket, or products..."
-                        value={searchInput}
-                        onClear={() => onClear()}
-                        onValueChange={onSearchChange}
-                        classNames={{
-                            input: "placeholder:text-gray-700 group-hover:placeholder:text-gray-800",
-                            inputWrapper: "group bg-white/10 backdrop-blur-md border border-white/20"
-                        }}
-                    />
+                    <div className="flex w-full sm:max-w-[44%] items-center relative">
+                        <Input
+                            isClearable
+                            className="w-full"
+                            placeholder="Search by tracking, basket, or products..."
+                            value={searchInput}
+                            onClear={() => onClear()}
+                            onValueChange={onSearchChange}
+                            classNames={{
+                                input: "placeholder:text-gray-700 group-hover:placeholder:text-gray-800",
+                                inputWrapper: "group bg-white/10 backdrop-blur-md border border-white/20"
+                            }}
+                        />
+                        {/* Move scan button outside input for better layout */}
+                        <span
+                            role="button"
+                            tabIndex={0}
+                            aria-label="Scan QR"
+                            className="ml-2 cursor-pointer flex items-center justify-center rounded-full p-1 text-gray-700/80 hover:text-gray-800/80"
+                            onClick={() => setQrScanOpen(true)}
+                            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setQrScanOpen(true); }}
+                            style={{ zIndex: 2 }}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2" stroke="currentColor" strokeWidth="2" /><rect x="14" y="3" width="7" height="7" rx="2" stroke="currentColor" strokeWidth="2" /><rect x="14" y="14" width="7" height="7" rx="2" stroke="currentColor" strokeWidth="2" /><rect x="3" y="14" width="7" height="7" rx="2" stroke="currentColor" strokeWidth="2" /><rect x="8" y="8" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="2" /></svg>
+                        </span>
+                    </div>
                     <div className="flex gap-3">
                         <Button color="primary" onPress={onOpen} startContent={<PlusIcon className="w-4 h-4" />}
                             className="bg-purple-500/80 backdrop-blur-md border border-white/20 text-white hover:bg-purple-600/80">
@@ -168,8 +186,90 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
         );
     }, [rowsPerPage, filteredItems.length, onSearchChange, onOpen, searchInput]);
 
+    // QR Scan modal effect (should be at top-level, not inside useMemo)
+    useEffect(() => {
+        let html5QrCode: any = null;
+        if (qrScanOpen) {
+            setQrScanError("");
+            const qrRegionId = "qr-reader-search";
+            setTimeout(() => {
+                const qrElem = document.getElementById(qrRegionId);
+                if (!qrElem) return;
+                qrElem.style.minHeight = "220px";
+                qrElem.style.width = "100%";
+                html5QrCode = new Html5Qrcode(qrRegionId);
+                const cameraConfig = { facingMode: "environment" };
+                const config = { fps: 10, qrbox: { width: 320, height: 200 }, aspectRatio: 1.6 };
+                html5QrCode.start(
+                    cameraConfig,
+                    config,
+                    function (decodedText: string) {
+                        // Flash green corners only when QR found
+                        const frameElem = document.querySelector('.qr-corner-frame-search');
+                        if (frameElem) {
+                            frameElem.classList.add('qr-corner-flash');
+                            setTimeout(() => {
+                                frameElem.classList.remove('qr-corner-flash');
+                                setSearchInput(decodedText);
+                                setQrScanOpen(false);
+                            }, 700);
+                        } else {
+                            setSearchInput(decodedText);
+                            setQrScanOpen(false);
+                        }
+                    },
+                    function (errorMessage: string) {
+                        setQrScanError(errorMessage);
+                    }
+                ).catch(function (err: any) {
+                    setQrScanError("Camera error: " + err);
+                });
+            }, 300);
+        }
+        return () => {
+            if (typeof html5QrCode !== 'undefined' && html5QrCode != null) {
+                const isScanning = (html5QrCode as any).isScanning;
+                if (isScanning && typeof html5QrCode.stop === 'function') {
+                    html5QrCode.stop()
+                        .then(() => {
+                            if (html5QrCode && typeof html5QrCode.clear === 'function') html5QrCode.clear();
+                        })
+                        .catch(() => {
+                            if (html5QrCode && typeof html5QrCode.clear === 'function') html5QrCode.clear();
+                        });
+                } else if (html5QrCode && typeof html5QrCode.clear === 'function') {
+                    html5QrCode.clear();
+                }
+            }
+        };
+    }, [qrScanOpen]);
+
     return (
         <div className="space-y-4">
+            {/* QR Scan Modal for search input */}
+            <Modal isOpen={qrScanOpen} onClose={() => setQrScanOpen(false)} size="md" hideCloseButton placement="center" classNames={{ base: "max-w-md z-[9999]" }}>
+                <ModalContent>
+                    <ModalHeader className="text-center">Scan QR / Barcode</ModalHeader>
+                    <ModalBody className="flex flex-col items-center justify-center py-4" style={{ position: "relative" }}>
+                        <div style={{ position: "relative", width: "100%", minHeight: 220, zIndex: 20 }}>
+                            <div
+                                id="qr-reader-search"
+                                style={{ width: "100%", minHeight: 220, position: "relative", borderRadius: 12, overflow: "hidden", zIndex: 20 }}
+                                className={qrScanError ? "qr-error" : ""}
+                            />
+                            {/* Green flash overlay for corners */}
+                            <div className="qr-corner-frame-search" style={{ zIndex: 21, pointerEvents: "none" }}>
+                                <div className="corner-bl" />
+                                <div className="corner-tr" />
+                            </div>
+                        </div>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button variant="light" onPress={() => setQrScanOpen(false)}>Cancel</Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+
             <Table
                 isHeaderSticky
                 aria-label="Sales Table"
@@ -205,7 +305,6 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
             >
                 <TableHeader>
                     <TableColumn className="hidden sm:table-cell">Date</TableColumn>
-                    <TableColumn>Customer</TableColumn>
                     <TableColumn className="hidden md:table-cell">Tracking</TableColumn>
                     <TableColumn className="hidden lg:table-cell">Basket</TableColumn>
                     <TableColumn className="min-w-[200px] sm:w-full">Products</TableColumn>
@@ -234,19 +333,6 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                                             (s.date.toLocaleString ? s.date.toLocaleString() : String(s.date))
                                         ) : '-'
                                     }
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex flex-col">
-                                        <span>{s.customerName || '-'}</span>
-                                        <span className="text-xs text-gray-700 sm:hidden">
-                                            {s.date ?
-                                                (typeof s.date === 'string' ?
-                                                    s.date :
-                                                    (s.date.toLocaleString ? s.date.toLocaleString() : String(s.date))
-                                                ) : '-'
-                                            }
-                                        </span>
-                                    </div>
                                 </TableCell>
                                 <TableCell className="hidden md:table-cell">{s.trackingNumber || '-'}</TableCell>
                                 <TableCell className="hidden lg:table-cell">{basketName}</TableCell>
@@ -317,14 +403,14 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                                     {(() => {
                                         // ใช้ totalRevenue ที่บันทึกไว้ ถ้าไม่มีให้คำนวณแบบเก่า
                                         let revenue = s.totalRevenue;
-                                        
+
                                         if (revenue === undefined || revenue === null) {
                                             // Fallback สำหรับ sale เก่า
                                             const basketSellPrice = s.basketSellPrice || currentBasket?.sellPrice || 0;
                                             const orderCount = s.orderCount || 1;
                                             revenue = basketSellPrice * orderCount * (1 - 0.0856);
                                         }
-                                        
+
                                         return (
                                             <span className="font-semibold text-secondary-700 text-sm">
                                                 ฿{revenue.toLocaleString()}
@@ -336,20 +422,20 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
                                     {(() => {
                                         // ใช้ profit ที่บันทึกไว้ ถ้าไม่มีให้คำนวณแบบเก่า (สำหรับ sale เก่า)
                                         let profit = s.profit;
-                                        
+
                                         if (profit === undefined || profit === null) {
                                             // Fallback สำหรับ sale เก่า
                                             const totalCost = (s.products || []).reduce((total: number, p: any) => {
                                                 const price = p.priceAtSale || currentBasket?.products?.find((bp: any) => bp.id === p.productId)?.price || 0;
                                                 return total + ((p.qty || 0) * price);
                                             }, 0);
-                                            
+
                                             const basketSellPrice = s.basketSellPrice || currentBasket?.sellPrice || 0;
                                             const orderCount = s.orderCount || 1;
                                             const adjustedSellPrice = basketSellPrice * orderCount * (1 - 0.0856);
                                             profit = adjustedSellPrice - totalCost;
                                         }
-                                        
+
                                         return (
                                             <span className={`font-semibold text-sm ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                 ฿{profit.toLocaleString()}

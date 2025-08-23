@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { Html5Qrcode } from "html5-qrcode";
 import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Input } from "@heroui/react";
 import { updateProductInBasket } from "../../../../services/baskets";
 import { addSale, deleteSale } from "../../../../services/sales";
@@ -15,10 +16,70 @@ interface EditSalesModalProps {
 
 export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets, onSaleUpdated }: EditSalesModalProps) {
     const [editProductCounts, setEditProductCounts] = useState<{ [key: string]: number }>({});
-    const [customerName, setCustomerName] = useState<string>("");
     const [trackingNumber, setTrackingNumber] = useState<string>("");
     const [orderCount, setOrderCount] = useState<number>(1);
     const [loading, setLoading] = useState(false);
+    // QR modal state
+    const [qrOpen, setQrOpen] = useState(false);
+    const [qrError, setQrError] = useState<string>("");
+    // QR scanner effect (html5-qrcode)
+    useEffect(() => {
+        let html5QrCode: Html5Qrcode | null = null;
+        if (qrOpen) {
+            setQrError("");
+            const qrRegionId = "qr-reader-edit";
+            setTimeout(() => {
+                const qrElem = document.getElementById(qrRegionId);
+                if (!qrElem) return;
+                // Ensure element is visible and has size
+                qrElem.style.minHeight = "240px";
+                qrElem.style.width = "100%";
+                html5QrCode = new Html5Qrcode(qrRegionId);
+                const cameraConfig = { facingMode: "environment" };
+                const config = { fps: 10, qrbox: { width: 320, height: 200 }, aspectRatio: 1.6 };
+                html5QrCode.start(
+                    cameraConfig,
+                    config,
+                    function (decodedText: string) {
+                        // Flash green corners only when QR found
+                        const frameElem = document.querySelector('.qr-corner-frame-edit');
+                        if (frameElem) {
+                            frameElem.classList.add('qr-corner-flash');
+                            setTimeout(() => {
+                                frameElem.classList.remove('qr-corner-flash');
+                                setTrackingNumber(decodedText);
+                                setQrOpen(false);
+                            }, 700);
+                        } else {
+                            setTrackingNumber(decodedText);
+                            setQrOpen(false);
+                        }
+                    },
+                    function (errorMessage: string) {
+                        setQrError(errorMessage);
+                    }
+                ).catch(function (err: any) {
+                    setQrError("Camera error: " + err);
+                });
+            }, 300); // Wait longer for modal to open
+        }
+        return () => {
+            if (typeof html5QrCode !== 'undefined' && html5QrCode != null) {
+                const isScanning = (html5QrCode as any).isScanning;
+                if (isScanning && typeof html5QrCode.stop === 'function') {
+                    html5QrCode.stop()
+                        .then(() => {
+                            if (html5QrCode && typeof html5QrCode.clear === 'function') html5QrCode.clear();
+                        })
+                        .catch(() => {
+                            if (html5QrCode && typeof html5QrCode.clear === 'function') html5QrCode.clear();
+                        });
+                } else if (html5QrCode && typeof html5QrCode.clear === 'function') {
+                    html5QrCode.clear();
+                }
+            }
+        };
+    }, [qrOpen]);
 
     // Keyboard aware modal
     const { modalStyles } = useKeyboardAwareModal({ 
@@ -32,7 +93,7 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
                 counts[p.productId] = p.qty; 
             });
             setEditProductCounts(counts);
-            setCustomerName(selectedSale.customerName || "");
+            // Removed customerName logic
             setTrackingNumber(selectedSale.trackingNumber || "");
             setOrderCount(selectedSale.orderCount || 1);
         }
@@ -98,7 +159,7 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
                 basketSellPrice,
                 orderCount,
                 products: newProducts,
-                customerName: customerName,
+                // Removed customerName
                 trackingNumber: trackingNumber,
                 totalCost,
                 totalRevenue,
@@ -122,7 +183,7 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
 
     const handleClose = () => {
         setEditProductCounts({});
-        setCustomerName("");
+        // Removed customerName
         setTrackingNumber("");
         setOrderCount(1);
         onClose();
@@ -152,23 +213,47 @@ export default function EditSalesModal({ isOpen, onClose, selectedSale, baskets,
                     {selectedSale && basket && (
                         <div className="flex flex-col gap-4">
                             <div className="space-y-3">
-                                <div>
-                                    <Input
-                                        label="Customer Name"
-                                        placeholder="Enter customer name"
-                                        value={customerName}
-                                        onChange={(e) => setCustomerName(e.target.value)}
-                                    />
-                                </div>
-                                <div>
-                                    <Input
-                                        label="Tracking Number"
-                                        placeholder="Enter tracking number"
-                                        value={trackingNumber}
-                                        onChange={(e) => setTrackingNumber(e.target.value)}
-                                    />
-                                </div>
-                                
+                                {/* Removed Customer Name input */}
+                                <Input
+                                    label="Tracking Number"
+                                    placeholder="Enter tracking number"
+                                    value={trackingNumber}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTrackingNumber(e.target.value)}
+                                    endContent={
+                                        <Button
+                                            isIconOnly
+                                            variant="light"
+                                            onPress={() => setQrOpen(true)}
+                                            aria-label="Scan QR"
+                                            className="ml-1"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2" stroke="currentColor" strokeWidth="2" /><rect x="14" y="3" width="7" height="7" rx="2" stroke="currentColor" strokeWidth="2" /><rect x="14" y="14" width="7" height="7" rx="2" stroke="currentColor" strokeWidth="2" /><rect x="3" y="14" width="7" height="7" rx="2" stroke="currentColor" strokeWidth="2" /><rect x="8" y="8" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="2" /></svg>
+                                        </Button>
+                                    }
+                                />
+                                {/* QR Modal for tracking number (single, matches SalesModal) */}
+                                <Modal isOpen={qrOpen} onClose={() => setQrOpen(false)} size="md" hideCloseButton placement="center" classNames={{ base: "max-w-md z-[9999]" }}>
+                                    <ModalContent>
+                                        <ModalHeader className="text-center">Scan QR / Barcode</ModalHeader>
+                                        <ModalBody className="flex flex-col items-center justify-center py-4" style={{ position: "relative" }}>
+                                            <div style={{ position: "relative", width: "100%", minHeight: 220, zIndex: 20 }}>
+                                                <div
+                                                    id="qr-reader-edit"
+                                                    style={{ width: "100%", minHeight: 220, position: "relative", borderRadius: 12, overflow: "hidden", zIndex: 20 }}
+                                                    className={qrError ? "qr-error" : ""}
+                                                />
+                                                {/* Green flash overlay for corners */}
+                                                <div className="qr-corner-frame-edit" style={{ zIndex: 21, pointerEvents: "none" }}>
+                                                    <div className="corner-bl" />
+                                                    <div className="corner-tr" />
+                                                </div>
+                                            </div>
+                                        </ModalBody>
+                                        <ModalFooter>
+                                            <Button variant="light" onPress={() => setQrOpen(false)}>Cancel</Button>
+                                        </ModalFooter>
+                                    </ModalContent>
+                                </Modal>
                                 {/* Number of Orders with +/- buttons */}
                                 <div className="space-y-2">
                                     <label className="text-sm text-gray-600 font-medium">Number of Orders</label>

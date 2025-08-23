@@ -4,6 +4,7 @@ import { Button, Modal, ModalBody, ModalContent, ModalHeader, ModalFooter, Card,
 import { updateProductInBasket } from "../../../../services/baskets";
 import { addSale } from "../../../../services/sales";
 import { useKeyboardAwareModal } from "../../../../hooks/useKeyboardAwareModal";
+import { Html5Qrcode } from "html5-qrcode";
 
 interface SalesModalProps {
     isOpen: boolean;
@@ -18,15 +19,73 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
     const [productCounts, setProductCounts] = useState<{ [key: string]: number }>({});
     const [searchTerm, setSearchTerm] = useState("");
     const [searchInput, setSearchInput] = useState("");
-    const [customerName, setCustomerName] = useState("");
     const [trackingNumber, setTrackingNumber] = useState("");
     const [orderCount, setOrderCount] = useState(1);
     const [loading, setLoading] = useState(false);
+    const [qrOpen, setQrOpen] = useState(false);
+    // QR modal state
+    const [qrError, setQrError] = useState<string>("");
 
     // Keyboard aware modal
-    const { modalStyles } = useKeyboardAwareModal({ 
+    const { modalStyles } = useKeyboardAwareModal({
         isOpen
     });
+
+    // QR scanner effect (html5-qrcode)
+    useEffect(() => {
+        let html5QrCode: Html5Qrcode | null = null;
+        if (qrOpen) {
+            setQrError("");
+            const qrRegionId = "qr-reader";
+            setTimeout(() => {
+                const qrElem = document.getElementById(qrRegionId);
+                if (!qrElem) return;
+                html5QrCode = new Html5Qrcode(qrRegionId);
+                const cameraConfig = { facingMode: "environment" };
+                const config = { fps: 10, qrbox: { width: 320, height: 200 }, aspectRatio: 1.6 };
+                html5QrCode.start(
+                    cameraConfig,
+                    config,
+                    function (decodedText: string) {
+                        // Flash green corners only when QR found
+                        const frameElem = document.querySelector('.qr-corner-frame');
+                        if (frameElem) {
+                            frameElem.classList.add('qr-corner-flash');
+                            setTimeout(() => {
+                                frameElem.classList.remove('qr-corner-flash');
+                                setTrackingNumber(decodedText);
+                                setQrOpen(false);
+                            }, 700);
+                        } else {
+                            setTrackingNumber(decodedText);
+                            setQrOpen(false);
+                        }
+                    },
+                    function (errorMessage: string) {
+                        setQrError(errorMessage);
+                    }
+                ).catch(function (err: any) {
+                    setQrError("Camera error: " + err);
+                });
+            }, 200);
+        }
+        return () => {
+            if (html5QrCode != null) {
+                const isScanning = (html5QrCode as any).isScanning;
+                if (isScanning && typeof html5QrCode.stop === 'function') {
+                    html5QrCode.stop()
+                        .then(() => {
+                            if (typeof html5QrCode?.clear === 'function') html5QrCode.clear();
+                        })
+                        .catch(() => {
+                            if (typeof html5QrCode?.clear === 'function') html5QrCode.clear();
+                        });
+                } else if (typeof html5QrCode?.clear === 'function') {
+                    html5QrCode.clear();
+                }
+            }
+        };
+    }, [qrOpen]);
 
     // Debounce search input
     useEffect(() => {
@@ -43,7 +102,6 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
         setProductCounts({});
         setSearchTerm("");
         setSearchInput("");
-        setCustomerName("");
         setTrackingNumber("");
         setOrderCount(1);
         onClose();
@@ -59,7 +117,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
             if (!selectedBasket) return;
             const basketId = selectedBasket.id;
             const products = selectedBasket.products || [];
-            
+
             // คำนวณราคาและกำไรขณะที่ขาย
             const saleProducts = products
                 .filter((p: any) => (productCounts[p.id] || 0) > 0)
@@ -72,20 +130,20 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
 
             if (saleProducts.length === 0) return;
 
-            if (!customerName.trim() || !trackingNumber.trim()) {
-                alert("Please enter customer name and tracking number");
+            if (!trackingNumber.trim()) {
+                alert("Please enter tracking number");
                 return;
             }
 
             // คำนวณต้นทุนรวม
             const totalCost = saleProducts.reduce((sum: number, p: any) => sum + (p.qty * p.priceAtSale), 0);
-            
+
             // ราคาขายตะกร้า
             const basketSellPrice = selectedBasket.sellPrice || 0;
-            
+
             // รายได้หลังหัก 8.56% * จำนวนออเดอร์
             const totalRevenue = basketSellPrice * orderCount * (1 - 0.0856);
-            
+
             // กำไร
             const profit = totalRevenue - totalCost;
 
@@ -96,7 +154,6 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                 basketSellPrice,
                 orderCount,
                 products: saleProducts,
-                customerName: customerName.trim(),
                 trackingNumber: trackingNumber.trim(),
                 totalCost,
                 totalRevenue,
@@ -111,7 +168,7 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
             }
 
             handleCloseModal();
-            
+
             // Small delay to let modal close animation complete before refreshing
             setTimeout(() => {
                 onSaleComplete();
@@ -122,11 +179,11 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
     };
 
     return (
-        <Modal 
-            isOpen={isOpen} 
-            onClose={handleCloseModal} 
-            size="xl" 
-            isDismissable={step === 0} 
+        <Modal
+            isOpen={isOpen}
+            onClose={handleCloseModal}
+            size="xl"
+            isDismissable={step === 0}
             hideCloseButton={false}
             placement={modalStyles.position}
             scrollBehavior="inside"
@@ -206,132 +263,130 @@ export default function SalesModal({ isOpen, onClose, baskets, onSaleComplete }:
                                 <div key={p.id} className="bg-gray-50 rounded-lg p-3 sm:p-4">
                                     <div className="flex flex-col items-center gap-3">
                                         <span className="font-medium text-sm sm:text-base text-center">{p.name}</span>
-                                        
+
                                         {/* Quantity controls */}
                                         <div className="flex items-center gap-3">
-                                                <Button 
-                                                    size="md" 
-                                                    onPress={() => setProductCounts(c => ({ ...c, [p.id]: Math.max((c[p.id] || 0) - 1, 0) }))}
-                                                    className="min-w-unit-10 sm:min-w-unit-12 h-10 sm:h-12 text-lg font-bold"
-                                                >
-                                                    -
-                                                </Button>
-                                                <div className="relative">
-                                                    <Input
-                                                        type="number"
-                                                        label="Quantity"
-                                                        value={(productCounts[p.id] || 0).toString()}
-                                                        onChange={(e) => setProductCounts(c => ({ ...c, [p.id]: Math.max(Number(e.target.value), 0) }))}
-                                                        className="w-16 sm:w-20 text-center flex justify-center"
-                                                        size="sm"
-                                                        classNames={{
-                                                            input: "text-base sm:text-lg font-semibold text-center",
-                                                            inputWrapper: "h-10 sm:h-12"
-                                                        }}
-                                                    />
-                                                </div>
-                                                <Button 
-                                                    size="md" 
-                                                    onPress={() => setProductCounts(c => ({ ...c, [p.id]: (c[p.id] || 0) + 1 }))}
-                                                    className="min-w-unit-10 sm:min-w-unit-12 h-10 sm:h-12 text-lg font-bold"
-                                                >
-                                                    +
-                                                </Button>
+                                            <Button
+                                                size="md"
+                                                onPress={() => setProductCounts(c => ({ ...c, [p.id]: Math.max((c[p.id] || 0) - 1, 0) }))}
+                                                className="min-w-unit-10 sm:min-w-unit-12 h-10 sm:h-12 text-lg font-bold"
+                                            >
+                                                -
+                                            </Button>
+                                            <div className="relative">
+                                                <Input
+                                                    type="number"
+                                                    label="Quantity"
+                                                    value={(productCounts[p.id] || 0).toString()}
+                                                    onChange={(e) => setProductCounts(c => ({ ...c, [p.id]: Math.max(Number(e.target.value), 0) }))}
+                                                    className="w-16 sm:w-20 text-center flex justify-center"
+                                                    size="sm"
+                                                    classNames={{
+                                                        input: "text-base sm:text-lg font-semibold text-center",
+                                                        inputWrapper: "h-10 sm:h-12"
+                                                    }}
+                                                />
                                             </div>
-                                            
-                                            {/* Quick set buttons - below */}
-                                            <div className="flex gap-2 justify-center">
-                                                <Button 
-                                                    size="sm" 
-                                                    variant="bordered"
-                                                    onPress={() => setProductCounts(c => ({ ...c, [p.id]: 5 }))}
-                                                    className="px-2 sm:px-3 text-xs min-w-unit-8 sm:min-w-unit-12"
-                                                >
-                                                    5
-                                                </Button>
-                                                <Button 
-                                                    size="sm" 
-                                                    variant="bordered"
-                                                    onPress={() => setProductCounts(c => ({ ...c, [p.id]: 10 }))}
-                                                    className="px-2 sm:px-3 text-xs min-w-unit-8 sm:min-w-unit-12"
-                                                >
-                                                    10
-                                                </Button>
-                                                <Button 
-                                                    size="sm" 
-                                                    variant="bordered"
-                                                    onPress={() => setProductCounts(c => ({ ...c, [p.id]: 15 }))}
-                                                    className="px-2 sm:px-3 text-xs min-w-unit-8 sm:min-w-unit-12"
-                                                >
-                                                    15
-                                                </Button>
-                                            </div>
-                                            
-                                            <span className="text-xs text-gray-400 text-center">
-                                                (In stock: <span className={`${(p.stock || 0) < 0 ? 'text-red-400 font-semibold' : ''}`}>
-                                                    {p.stock !== undefined ? p.stock : 0}
-                                                </span>)
-                                            </span>
+                                            <Button
+                                                size="md"
+                                                onPress={() => setProductCounts(c => ({ ...c, [p.id]: (c[p.id] || 0) + 1 }))}
+                                                className="min-w-unit-10 sm:min-w-unit-12 h-10 sm:h-12 text-lg font-bold"
+                                            >
+                                                +
+                                            </Button>
                                         </div>
+
+                                        {/* Quick set buttons - below */}
+                                        <div className="flex gap-2 justify-center">
+                                            <Button
+                                                size="sm"
+                                                variant="bordered"
+                                                onPress={() => setProductCounts(c => ({ ...c, [p.id]: 5 }))}
+                                                className="px-2 sm:px-3 text-xs min-w-unit-8 sm:min-w-unit-12"
+                                            >
+                                                5
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="bordered"
+                                                onPress={() => setProductCounts(c => ({ ...c, [p.id]: 10 }))}
+                                                className="px-2 sm:px-3 text-xs min-w-unit-8 sm:min-w-unit-12"
+                                            >
+                                                10
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="bordered"
+                                                onPress={() => setProductCounts(c => ({ ...c, [p.id]: 15 }))}
+                                                className="px-2 sm:px-3 text-xs min-w-unit-8 sm:min-w-unit-12"
+                                            >
+                                                15
+                                            </Button>
+                                        </div>
+
+                                        <span className="text-xs text-gray-400 text-center">
+                                            (In stock: <span className={`${(p.stock || 0) < 0 ? 'text-red-400 font-semibold' : ''}`}>
+                                                {p.stock !== undefined ? p.stock : 0}
+                                            </span>)
+                                        </span>
                                     </div>
-                                ))}
+                                </div>
+                            ))}
                         </div>
                     )}
 
                     {step === 2 && (
                         <div className="space-y-4 h-full">
-                            {/* Customer Information Section */}
+                            {/* Tracking Number Section */}
                             <div className="bg-white border rounded-lg p-4">
-                                <h4 className="font-semibold text-base mb-3 text-center">Customer Information</h4>
+                                <h4 className="font-semibold text-base mb-3 text-center">Tracking Number</h4>
                                 <div className="space-y-3">
-                                    <Input
-                                        label="Customer Name"
-                                        placeholder="Enter customer name"
-                                        value={customerName}
-                                        onChange={(e) => setCustomerName(e.target.value)}
-                                        isRequired
-                                        size="sm"
-                                    />
-                                    <Input
-                                        label="Tracking Number"
-                                        placeholder="Enter tracking number"
-                                        value={trackingNumber}
-                                        onChange={(e) => setTrackingNumber(e.target.value)}
-                                        isRequired
-                                        size="sm"
-                                    />
-                                    
-                                    {/* Number of Orders - Compact */}
-                                    <div className="space-y-2">
-                                        <label className="text-sm text-gray-600 font-medium">Number of Orders</label>
-                                        <div className="flex items-center justify-center gap-2">
-                                            <Button 
-                                                size="sm" 
-                                                onPress={() => setOrderCount(Math.max(1, orderCount - 1))}
-                                                isDisabled={orderCount <= 1}
-                                                className="min-w-unit-8 h-8 text-base font-bold"
-                                                color="default"
-                                                variant="bordered"
-                                            >
-                                                -
-                                            </Button>
-                                            <div className="bg-gray-100 rounded-lg px-3 py-1 min-w-[50px] text-center">
-                                                <span className="text-lg font-bold text-gray-800">{orderCount}</span>
-                                            </div>
-                                            <Button 
-                                                size="sm" 
-                                                onPress={() => setOrderCount(orderCount + 1)}
-                                                className="min-w-unit-8 h-8 text-base font-bold"
-                                                color="primary"
-                                                variant="bordered"
-                                            >
-                                                +
-                                            </Button>
-                                        </div>
+                                    <div className="flex items-center justify-between">
+                                        <Input
+                                            label="Tracking Number"
+                                            placeholder="Enter tracking number"
+                                            value={trackingNumber}
+                                            onChange={(e) => setTrackingNumber(e.target.value)}
+                                            isRequired
+                                            size="sm"
+                                            className="flex-1"
+                                        />
+                                        <Button
+                                            isIconOnly
+                                            variant="light"
+                                            className="ml-2"
+                                            onPress={() => setQrOpen(true)}
+                                            aria-label="Scan QR"
+                                        >
+                                            {/* Simple QR icon SVG */}
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2" stroke="currentColor" strokeWidth="2" /><rect x="14" y="3" width="7" height="7" rx="2" stroke="currentColor" strokeWidth="2" /><rect x="14" y="14" width="7" height="7" rx="2" stroke="currentColor" strokeWidth="2" /><rect x="3" y="14" width="7" height="7" rx="2" stroke="currentColor" strokeWidth="2" /><rect x="8" y="8" width="8" height="8" rx="2" stroke="currentColor" strokeWidth="2" /></svg>
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
-                            
+                            {/* QR Modal */}
+                            <Modal isOpen={qrOpen} onClose={() => setQrOpen(false)} size="md" hideCloseButton placement="center" classNames={{ base: "max-w-md" }}>
+                                <ModalContent>
+                                    <ModalHeader className="text-center">Scan QR / Barcode</ModalHeader>
+                                    <ModalBody className="flex flex-col items-center justify-center py-4" style={{ position: "relative" }}>
+                                        <div style={{ position: "relative", width: "100%", minHeight: 200 }}>
+                                            <div
+                                                id="qr-reader"
+                                                style={{ width: "100%", minHeight: 200, position: "relative", borderRadius: 12, overflow: "hidden" }}
+                                                className={qrError ? "qr-error" : ""}
+                                            />
+                                            <div className="qr-corner-frame">
+                                                <div className="corner-bl" />
+                                                <div className="corner-tr" />
+                                            </div>
+                                        </div>
+                                    </ModalBody>
+                                    <ModalFooter>
+                                        <Button variant="light" onPress={() => setQrOpen(false)}>Cancel</Button>
+                                    </ModalFooter>
+                                </ModalContent>
+                            </Modal>
+
                             {/* Order Summary Section - Scrollable */}
                             <div className="bg-white border rounded-lg p-4 flex-1 min-h-0">
                                 <h4 className="font-semibold text-base mb-3 text-center">Order Summary</h4>
