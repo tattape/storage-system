@@ -47,14 +47,18 @@ export default function SalesTable({ sales, baskets, onSaleComplete }: SalesTabl
         let filteredSales = [...sales];
 
         if (hasSearchFilter) {
-            filteredSales = filteredSales.filter((sale) =>
-                sale.trackingNumber?.toLowerCase().includes(filterValue.toLowerCase()) ||
-                filterValue.toLowerCase().includes(sale.trackingNumber?.toLowerCase()) ||
-                sale.basketName?.toLowerCase().includes(filterValue.toLowerCase()) ||
-                sale.products?.some((p: any) =>
-                    p.productName?.toLowerCase().includes(filterValue.toLowerCase())
-                )
-            );
+            const filter = filterValue.toLowerCase();
+            filteredSales = filteredSales.filter((sale) => {
+                const tracking = sale.trackingNumber?.toLowerCase() || "";
+                const basket = sale.basketName?.toLowerCase() || "";
+                const products = sale.products || [];
+                return (
+                    tracking.includes(filter) ||
+                    filter.includes(tracking) ||
+                    basket.includes(filter) ||
+                    products.some((p: any) => p.productName?.toLowerCase().includes(filter))
+                );
+            });
         }
 
         // Sort by date - newest first
